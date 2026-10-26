@@ -1,6 +1,6 @@
 // Offline pro Nokturno: stránka se bere vždycky nejdřív ze sítě (ať je hned nová verze),
 // bez sítě z mezipaměti. Data dokumentů jsou v IndexedDB, sem nepatří.
-const CACHE = 'nokturno-a3e34d62ee';
+const CACHE = 'nokturno-7fa5d9a72e';
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener('activate', e => e.waitUntil(

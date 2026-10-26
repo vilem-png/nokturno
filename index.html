@@ -1580,7 +1580,11 @@ const GD = {
     if (!this.clientId()){ toast('Chybí Client ID z Google Cloud.'); openSettings(); return; }
     await flushSave();
     const st = uid(); localStorage.setItem('nk_gd_state', st); localStorage.setItem('nk_gd_try', Date.now());
-    const q = new URLSearchParams({ client_id:this.clientId(), redirect_uri:location.origin+location.pathname, response_type:'token',
+    // Google pustí zpátky jen na adresy zapsané v Google Cloud – …/nokturno/index.html je tam jako …/nokturno/
+    const back = location.origin + location.pathname.replace(/\/index\.html$/, '/');
+    const ok = ['https://vilem-png.github.io/nokturno/', 'http://localhost:8130/nokturno.html'];
+    if (!settings.driveClientId && !ok.includes(back)){ toast(`Disk jde připojit jen z ${ok[0]}`); return; }
+    const q = new URLSearchParams({ client_id:this.clientId(), redirect_uri:back, response_type:'token',
       scope:'https://www.googleapis.com/auth/drive.file', include_granted_scopes:'true', state:st });
     location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + q;
   },
