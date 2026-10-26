@@ -1,0 +1,1772 @@
+<!doctype html>
+<html lang="cs" data-theme="noc">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nokturno">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>Nokturno</title>
+<style>
+/* ───────────── motivy ───────────── */
+:root{
+  --serif:"Iowan Old Style","Charter","Palatino Linotype","Palatino","Georgia",serif;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",sans-serif;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+  --acc:#d6a15c;
+  --fs:19px;
+}
+[data-theme="noc"]{
+  --bg:#0d0f14; --bg2:#12151c; --surface:#151821; --raise:#1b1f2a; --line:#222734; --line2:#2c3242;
+  --ink:#d8d2c4; --ink2:#99938a; --ink3:#5c5b5a; --ink4:#3a3b40;
+  --acc-ink:var(--acc); --sel:color-mix(in oklab,var(--acc) 26%,transparent);
+  --grain:.035; --shadow:0 18px 60px rgba(0,0,0,.55); color-scheme:dark;
+}
+[data-theme="uhel"]{
+  --bg:#110f0d; --bg2:#151310; --surface:#191713; --raise:#211e19; --line:#2a2620; --line2:#363128;
+  --ink:#d9c6a3; --ink2:#9a8a6f; --ink3:#62584a; --ink4:#3d372e;
+  --acc-ink:var(--acc); --sel:color-mix(in oklab,var(--acc) 24%,transparent);
+  --grain:.04; --shadow:0 18px 60px rgba(0,0,0,.6); color-scheme:dark;
+}
+[data-theme="papir"]{
+  --bg:#f2e8cf; --bg2:#ede2c5; --surface:#efe4c8; --raise:#f7efda; --line:#ddd0ad; --line2:#cfc09a;
+  --ink:#3a3122; --ink2:#7a6c52; --ink3:#a3947499; --ink4:#cbbd99;
+  --acc-ink:color-mix(in oklab,var(--acc) 62%,#3a2408); --sel:color-mix(in oklab,var(--acc) 30%,transparent);
+  --grain:.09; --shadow:0 18px 50px rgba(90,70,30,.22); color-scheme:light;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;overflow:hidden;
+  -webkit-font-smoothing:antialiased;transition:background .4s,color .4s}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;opacity:var(--grain);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .4  0 0 0 0 .3  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,textarea,select{font:inherit;color:inherit}
+::selection{background:var(--sel)}
+.hidden{display:none!important}
+
+/* ───────────── horní lišta ───────────── */
+.top{position:fixed;top:0;left:0;right:0;height:52px;display:flex;align-items:center;gap:10px;padding:0 14px;z-index:20;
+  background:linear-gradient(var(--bg) 55%,transparent);transition:opacity .6s}
+body.typing .top{opacity:0}
+body.typing .top:hover{opacity:1}
+.brand{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink2);letter-spacing:.02em;margin-left:4px;user-select:none}
+.brand b{font-style:normal;font-weight:400;color:var(--acc-ink)}
+.ib{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--ink2);transition:background .2s,color .2s}
+.ib:hover{background:var(--raise);color:var(--ink)}
+.ib.on{color:var(--acc-ink)}
+.ib svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.presets{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:2px;align-items:center;
+  padding:3px;border-radius:999px;background:color-mix(in oklab,var(--surface) 80%,transparent);border:1px solid var(--line)}
+.pill{height:28px;padding:0 13px;border-radius:999px;display:flex;align-items:center;gap:7px;color:var(--ink2);font-size:13px;letter-spacing:.01em;transition:all .25s;white-space:nowrap}
+.pill:hover{color:var(--ink)}
+.pill .g{font-size:12px;opacity:.85}
+.pill.active{background:var(--raise);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2)}
+.pill.active .g{color:var(--pacc,var(--acc-ink))}
+.pill.add{width:28px;padding:0;justify-content:center;color:var(--ink3)}
+.pill.add:hover{color:var(--ink)}
+.spacer{flex:1}
+.stat{font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;margin-right:6px;white-space:nowrap}
+.saved{width:6px;height:6px;border-radius:50%;background:var(--ink4);margin-right:4px;transition:background .3s}
+.saved.dirty{background:var(--acc-ink)}
+
+/* ───────────── rozvržení ───────────── */
+.wrap{position:fixed;inset:0;display:flex}
+.main{flex:1;overflow-y:auto;overflow-x:hidden;scroll-behavior:auto;position:relative}
+.main::-webkit-scrollbar{width:10px}
+.main::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px;border:3px solid var(--bg)}
+.col{max-width:700px;margin:0 auto;padding:118px 40px 45vh}
+
+/* ───────────── titul a karta ───────────── */
+.kicker{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;display:flex;gap:10px;align-items:center}
+.kicker .dot{width:4px;height:4px;border-radius:50%;background:var(--pacc,var(--acc-ink))}
+.title{width:100%;background:none;border:0;outline:0;font-family:var(--serif);font-size:40px;line-height:1.15;color:var(--ink);padding:0;margin:0 0 6px;letter-spacing:-.005em}
+.title::placeholder{color:var(--ink4)}
+
+.card{margin:22px 0 46px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0 14px}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 22px}
+.fld{min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld label{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fld input{width:100%;background:none;border:0;border-bottom:1px solid transparent;outline:0;padding:2px 0 3px;
+  font-family:var(--serif);font-size:15.5px;color:var(--ink);transition:border-color .2s}
+.fld input:hover{border-bottom-color:var(--line)}
+.fld input:focus{border-bottom-color:var(--pacc,var(--acc-ink))}
+.fld input::placeholder{color:var(--ink4)}
+.fld input[type=date]{font-family:var(--sans);font-size:13.5px;padding-top:4px}
+.rating{display:flex;gap:5px;align-items:center;height:26px}
+.rating i{width:9px;height:9px;border-radius:50%;border:1px solid var(--ink3);cursor:pointer;transition:all .15s}
+.rating i.on{background:var(--pacc,var(--acc-ink));border-color:var(--pacc,var(--acc-ink))}
+.rating i.pv{background:color-mix(in oklab,var(--pacc,var(--acc-ink)) 45%,transparent);border-color:var(--pacc,var(--acc-ink))}
+.rating span{font-size:12px;color:var(--ink2);margin-left:6px;font-variant-numeric:tabular-nums;min-width:30px}
+.tog{height:26px;font-family:var(--serif);font-size:15.5px;color:var(--ink3)}
+.tog.v{color:var(--ink)}
+.card-more{display:flex;gap:16px;margin-top:12px}
+.lnk{font-size:11.5px;color:var(--ink3);letter-spacing:.04em;transition:color .2s}
+.lnk:hover{color:var(--acc-ink)}
+.card.collapsed .fld.sec{display:none}
+
+/* ───────────── editor (textarea nad zrcadlem) ───────────── */
+.ed{position:relative}
+.edtext{font-family:var(--serif);font-size:var(--fs);line-height:1.78;letter-spacing:0;word-spacing:0;
+  font-kerning:none;font-variant-ligatures:none;text-rendering:optimizeSpeed;
+  white-space:pre-wrap;overflow-wrap:break-word;word-break:normal;tab-size:4;margin:0;padding:0;border:0}
+.mirror{color:var(--ink);pointer-events:none;min-height:60vh}
+.mirror>div{position:relative;transition:opacity .35s}
+.mirror .mk{color:var(--ink4)}
+.mirror .h{color:var(--ink);text-shadow:.35px 0 0 currentColor}
+.mirror .h .mk{color:var(--pacc,var(--acc-ink));opacity:.55;text-shadow:none}
+.mirror .h::before{content:"";position:absolute;left:-30px;top:.86em;width:14px;height:1px;background:var(--pacc,var(--acc-ink));opacity:.6}
+.mirror .h1{color:var(--pacc,var(--acc-ink))}
+.mirror .h3{color:var(--ink2)}
+.mirror .h3::before{width:7px;left:-23px}
+.mirror .q{color:var(--ink2)}
+.mirror .q::before{content:"";position:absolute;left:-18px;top:.35em;bottom:.35em;width:2px;border-radius:2px;background:var(--pacc,var(--acc-ink));opacity:.5}
+.mirror .q .mk{color:transparent}
+.mirror .bul{color:var(--pacc,var(--acc-ink))}
+.mirror .b{text-shadow:.4px 0 0 currentColor;color:var(--ink)}
+.mirror .i{color:color-mix(in oklab,var(--ink) 78%,var(--pacc,var(--acc)))}
+.mirror .code{font-family:inherit;color:var(--ink2);background:var(--raise);border-radius:3px}
+.mirror .tc{color:var(--pacc,var(--acc-ink));font-variant-numeric:tabular-nums}
+.mirror .hr{color:var(--ink4)}
+.mirror .dim{opacity:.22}
+#cm{display:inline}
+.ta{position:absolute;inset:0;width:100%;height:100%;resize:none;outline:0;background:transparent;overflow:hidden;
+  color:transparent;caret-color:var(--pacc,var(--acc-ink))}
+.ta::selection{color:transparent;background:var(--sel)}
+.ta::placeholder{color:var(--ink4)}
+
+/* ───────────── pohled AI vedle sekcí ───────────── */
+.brief{margin:-32px -10px 40px;padding:6px 10px;border-radius:10px;font-size:12px;color:var(--ink3)}
+.brief.flash{animation:flash 1.8s ease}
+@keyframes flash{0%,100%{background:transparent}30%{background:color-mix(in oklab,var(--pacc,var(--acc)) 16%,transparent)}}
+.brow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:30px}
+.brow .sp{flex:1}
+.bl{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2);white-space:nowrap}
+.bl svg,.eye svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.bl svg{color:var(--pacc,var(--acc-ink))}
+.bm{color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:0 1 auto}
+.bhint{margin-top:4px;color:var(--ink3);font-size:11.5px;line-height:1.5}
+.bhint.bad{color:#d2685b}
+.bnote{margin-top:4px;color:var(--acc-ink);font-size:12px;line-height:1.5}
+.bpaste{width:100%;margin-top:8px;border:1px dashed var(--line2);border-radius:8px;background:var(--bg2);padding:8px 10px;outline:0;resize:vertical;font-family:var(--mono);font-size:11.5px}
+.btn.sm{height:26px;padding:0 10px;font-size:12px}
+.seg.sm button{height:26px;padding:0 10px;font-size:12px}
+
+.edrow{position:relative}
+.col.split{max-width:1220px}
+.col.split>.kicker,.col.split>.title,.col.split>.card{max-width:660px}
+.col.split>.brief{max-width:680px}
+.col.split .edrow{display:grid;grid-template-columns:minmax(0,660px) minmax(240px,1fr);column-gap:64px}
+.notes{position:relative;display:none}
+.col.split .notes{display:block}
+.note{position:absolute;left:0;right:0;padding-left:16px;border-left:1px solid color-mix(in oklab,var(--pacc,var(--acc)) 40%,transparent);
+  transition:top .25s ease;animation:noteIn .35s ease}
+@keyframes noteIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+.note .nh{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);display:flex;gap:10px;align-items:center;margin-bottom:4px;line-height:1.5}
+.note .nh .sp{flex:1}
+.note .nh .lnk{text-transform:none;letter-spacing:.02em;font-size:11px;opacity:0;transition:opacity .2s}
+.note:hover .nh .lnk{opacity:1}
+.note .m-a{font-size:calc(var(--fs)*.8);line-height:1.62;color:var(--ink2)}
+.eyes{position:absolute;top:0;left:0;right:0;height:0;z-index:2}
+.eye{position:absolute;right:-46px;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;color:var(--ink4);transition:color .2s,background .2s}
+.eye:hover{color:var(--ink2);background:var(--raise)}
+.eye.on{color:var(--pacc,var(--acc-ink))}
+.aiview section{margin:0 0 38px}
+.aiview h2{position:relative;font-family:var(--serif);font-weight:400;font-size:var(--fs);color:var(--ink);margin:0 0 6px;text-shadow:.35px 0 0 currentColor}
+.aiview h2::before{content:"";position:absolute;left:-30px;top:.86em;width:14px;height:1px;background:var(--pacc,var(--acc-ink));opacity:.6}
+.aiview .m-a{font-size:calc(var(--fs)*.92);line-height:1.72}
+.aiview .lnk{opacity:.7}
+
+/* ───────────── zásuvka s dokumenty ───────────── */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:30;opacity:0;pointer-events:none;transition:opacity .3s}
+.scrim.on{opacity:1;pointer-events:auto}
+[data-theme="papir"] .scrim{background:rgba(80,60,20,.12)}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:310px;background:var(--surface);border-right:1px solid var(--line);z-index:31;
+  transform:translateX(-102%);transition:transform .35s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.drawer.on{transform:none}
+.dr-head{padding:18px 18px 10px;display:flex;align-items:center;gap:8px}
+.dr-head h3{margin:0;font-family:var(--serif);font-weight:400;font-size:19px;flex:1}
+.btn{height:30px;padding:0 12px;border-radius:8px;border:1px solid var(--line2);font-size:12.5px;color:var(--ink);transition:all .2s;white-space:nowrap}
+.btn:hover{border-color:var(--pacc,var(--acc-ink));color:var(--acc-ink)}
+.btn.pri{background:var(--pacc,var(--acc-ink));border-color:transparent;color:var(--bg)}
+.btn.pri:hover{filter:brightness(1.08);color:var(--bg)}
+.btn.ghost{border-color:transparent;color:var(--ink2)}
+.btn.danger:hover{border-color:#c0574a;color:#d2685b}
+.search{margin:2px 18px 8px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--bg2);padding:0 10px;outline:0;font-size:13px}
+.search:focus{border-color:var(--line2)}
+.dr-filter{display:flex;gap:12px;padding:0 18px 10px;font-size:11.5px}
+.dr-filter button{color:var(--ink3)}
+.dr-filter button.on{color:var(--ink)}
+.dlist{flex:1;overflow-y:auto;padding:0 8px 18px}
+.ditem{padding:10px 10px 11px;border-radius:9px;cursor:pointer;position:relative;transition:background .15s}
+.ditem:hover{background:var(--raise)}
+.ditem.cur{background:var(--raise);box-shadow:inset 2px 0 0 var(--pacc,var(--acc-ink))}
+.ditem .t{font-family:var(--serif);font-size:15.5px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:22px}
+.ditem .s{font-size:11.5px;color:var(--ink3);margin-top:3px;display:flex;gap:8px;align-items:center;white-space:nowrap;overflow:hidden}
+.ditem .s .pg{color:var(--ink2)}
+.ditem .x{position:absolute;right:8px;top:9px;width:22px;height:22px;border-radius:6px;color:var(--ink3);opacity:0;display:grid;place-items:center}
+.ditem:hover .x{opacity:1}
+.ditem .x:hover{color:#d2685b;background:var(--bg2)}
+.mini-r{display:inline-flex;gap:2px}
+.mini-r i{width:4px;height:4px;border-radius:50%;background:var(--ink4)}
+.mini-r i.on{background:var(--pacc,var(--acc-ink))}
+.dr-foot{border-top:1px solid var(--line);padding:12px 18px;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ───────────── AI panel ───────────── */
+.ai{width:0;flex:0 0 auto;overflow:hidden;transition:width .35s cubic-bezier(.2,.8,.2,1);border-left:1px solid transparent;background:var(--surface)}
+.ai.on{width:min(420px,42vw);border-left-color:var(--line)}
+.ai-in{width:min(420px,42vw);height:100%;display:flex;flex-direction:column}
+.ai-head{padding:16px 16px 8px 18px;display:flex;align-items:flex-start;gap:10px;margin-top:40px}
+.ai-head .who{flex:1;min-width:0}
+.ai-head .nm{font-family:var(--serif);font-size:20px;color:var(--ink)}
+.ai-head .ds{font-size:11.5px;color:var(--ink3);margin-top:2px;letter-spacing:.02em}
+.ai-head .mark{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:15px;color:var(--pacc,var(--acc-ink));
+  background:radial-gradient(circle at 35% 30%,color-mix(in oklab,var(--pacc,var(--acc)) 30%,transparent),transparent 70%);box-shadow:inset 0 0 0 1px var(--line2)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:6px 16px 12px 18px;border-bottom:1px solid var(--line)}
+.chip{height:26px;padding:0 10px;border-radius:999px;border:1px solid var(--line2);font-size:12px;color:var(--ink2);transition:all .2s}
+.chip:hover{color:var(--ink);border-color:var(--pacc,var(--acc-ink))}
+.chip:disabled{opacity:.4;cursor:default}
+.chip.sel{border-style:dashed}
+.msgs{flex:1;overflow-y:auto;padding:16px 16px 10px 18px;display:flex;flex-direction:column;gap:18px}
+.msgs::-webkit-scrollbar{width:8px}
+.msgs::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+.m-u{align-self:flex-end;max-width:88%;background:var(--raise);border:1px solid var(--line);border-radius:12px 12px 3px 12px;padding:8px 12px;font-size:13px;color:var(--ink2);white-space:pre-wrap;line-height:1.5}
+.m-u .lab{color:var(--pacc,var(--acc-ink));font-size:12px;letter-spacing:.03em}
+.m-a{font-family:var(--serif);font-size:15.5px;line-height:1.62;color:var(--ink)}
+.m-a p{margin:0 0 .7em}
+.m-a h1,.m-a h2,.m-a h3,.m-a h4{font-weight:400;margin:1em 0 .35em;color:var(--pacc,var(--acc-ink));font-size:1.04em;letter-spacing:.01em}
+.m-a h1:first-child,.m-a h2:first-child,.m-a h3:first-child{margin-top:0}
+.m-a ul,.m-a ol{margin:0 0 .7em;padding-left:1.2em}
+.m-a li{margin:.2em 0}
+.m-a li::marker{color:var(--ink3)}
+.m-a blockquote{margin:.4em 0 .8em;padding:.1em 0 .1em .9em;border-left:2px solid var(--pacc,var(--acc-ink));color:var(--ink)}
+.m-a code{font-family:var(--mono);font-size:.82em;background:var(--raise);padding:.1em .35em;border-radius:4px}
+.m-a pre{background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;font-size:12px}
+.m-a pre code{background:none;padding:0}
+.m-a strong{font-weight:600}
+.m-a a{color:var(--acc-ink)}
+.m-a .err{color:#d2685b;font-family:var(--sans);font-size:13px}
+.m-a .note{color:var(--ink3);font-family:var(--sans);font-size:12px}
+.m-tools{display:flex;gap:12px;margin-top:6px;opacity:0;transition:opacity .2s;font-family:var(--sans)}
+.m-wrap:hover .m-tools{opacity:1}
+.m-src{margin-top:6px;font-family:var(--sans);font-size:11.5px;color:var(--ink3);display:flex;flex-wrap:wrap;gap:4px 10px}
+.m-src a{color:var(--ink3);text-decoration:none;border-bottom:1px dotted var(--ink4);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-src a:hover{color:var(--acc-ink)}
+.status{font-family:var(--sans);font-size:12px;color:var(--ink3);display:flex;gap:8px;align-items:center}
+.status::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--pacc,var(--acc-ink));animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.25;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+.empty-ai{color:var(--ink3);font-family:var(--serif);font-size:15px;line-height:1.6;padding:6px 0}
+.empty-ai em{color:var(--ink2)}
+.compose{border-top:1px solid var(--line);padding:10px 12px 12px 14px}
+.ctx{display:flex;gap:12px;align-items:center;font-size:11.5px;color:var(--ink3);margin:0 2px 8px}
+.ctx label{display:flex;gap:5px;align-items:center;cursor:pointer}
+.ctx input{accent-color:var(--pacc,var(--acc))}
+.ctx .selinfo{color:var(--acc-ink);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:45%}
+.cbox{display:flex;gap:8px;align-items:flex-end;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 12px;transition:border-color .2s}
+.cbox:focus-within{border-color:var(--line2)}
+.cbox textarea{flex:1;background:none;border:0;outline:0;resize:none;font-size:13.5px;line-height:1.5;max-height:180px;min-height:21px;padding:1px 0}
+.cbox textarea::placeholder{color:var(--ink3)}
+.send{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--pacc,var(--acc-ink));color:var(--bg);flex:0 0 auto}
+.send svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.send.stop{background:var(--raise);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2)}
+.keycard{margin:18px;padding:16px;border:1px solid var(--line2);border-radius:12px;background:var(--bg2);font-size:13px;line-height:1.55;color:var(--ink2)}
+.keycard b{color:var(--ink);font-weight:500}
+.keycard input{width:100%;margin:10px 0 8px;height:34px;border-radius:8px;border:1px solid var(--line2);background:var(--surface);padding:0 10px;outline:0;font-family:var(--mono);font-size:12px}
+
+/* ───────────── dialogy ───────────── */
+.modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .25s}
+[data-theme="papir"] .modal{background:rgba(80,60,20,.18)}
+.modal.on{opacity:1;pointer-events:auto}
+.dlg{width:min(680px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto;background:var(--surface);border:1px solid var(--line2);border-radius:16px;box-shadow:var(--shadow);padding:24px 26px}
+.dlg h2{margin:0 0 4px;font-family:var(--serif);font-weight:400;font-size:24px}
+.dlg .sub{color:var(--ink3);font-size:12.5px;margin-bottom:18px;line-height:1.5}
+.row{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:start;margin-bottom:12px}
+.row>label{font-size:12px;color:var(--ink2);padding-top:8px}
+.row .hint{font-size:11.5px;color:var(--ink3);margin-top:4px;line-height:1.45}
+.inp{width:100%;height:34px;border-radius:8px;border:1px solid var(--line2);background:var(--bg2);padding:0 10px;outline:0;font-size:13px}
+textarea.inp{height:auto;padding:8px 10px;line-height:1.5;resize:vertical;font-size:12.5px}
+textarea.inp.mono{font-family:var(--mono);font-size:11.5px}
+.inp:focus{border-color:var(--pacc,var(--acc-ink))}
+.inline{display:flex;gap:8px;align-items:center}
+.inline input[type=color]{width:40px;height:34px;border:1px solid var(--line2);border-radius:8px;background:var(--bg2);padding:3px}
+.dlg-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;align-items:center}
+.dlg-foot .l{margin-right:auto;display:flex;gap:8px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.seg button{height:32px;padding:0 12px;font-size:12.5px;color:var(--ink2)}
+.seg button.on{background:var(--raise);color:var(--ink)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--raise);border:1px solid var(--line2);color:var(--ink);
+  padding:9px 16px;border-radius:10px;font-size:13px;opacity:0;transition:all .3s;z-index:60;box-shadow:var(--shadow);pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* ───────────── Google Disk ───────────── */
+.cloud{position:relative}
+.cloud[data-s="sync"]{color:var(--acc-ink)}
+.cloud[data-s="sync"] svg{animation:pulse 1.2s ease-in-out infinite}
+.cloud[data-s="login"]{color:var(--acc-ink)}
+.cloud[data-s="login"]::after{content:"";position:absolute;top:6px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--acc-ink)}
+.cloud[data-s="err"]{color:#d2685b}
+.cloud[data-s="offline"]{color:var(--ink4)}
+.gdline{font-size:12px;color:var(--ink3);margin-top:6px;line-height:1.5}
+
+/* ───────────── list s pohledem AI (mobil) ───────────── */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--line2);border-radius:16px 16px 0 0;
+  box-shadow:var(--shadow);transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);max-height:72vh;display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom)}
+.sheet.on{transform:none}
+.sh-h{display:flex;align-items:center;gap:12px;padding:14px 18px 8px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.sh-h span{flex:1}
+.sh-b{overflow-y:auto;padding:0 18px 22px;font-size:16px}
+
+/* ───────────── iPhone: výřez a domovský pruh ───────────── */
+.top{padding-top:env(safe-area-inset-top);height:calc(52px + env(safe-area-inset-top))}
+.col{padding-top:calc(118px + env(safe-area-inset-top))}
+.ai-head{margin-top:calc(40px + env(safe-area-inset-top))}
+.drawer{padding-top:env(safe-area-inset-top)}
+.compose{padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+
+@media (hover:none){
+  .m-tools,.ditem .x,.note .nh .lnk{opacity:1!important}
+}
+@media (max-width:760px){
+  #focusBtn,#twBtn,#themeBtn,#fsBtn,.saved{display:none}
+  .top{gap:4px;padding-left:8px;padding-right:8px}
+  .col{padding:calc(84px + env(safe-area-inset-top)) 20px 45vh}
+  .edtext{font-size:min(var(--fs),18px)}
+  .title{font-size:28px}
+  .col.split .edrow{display:block}
+  .col.split .notes{display:none}
+  .eye{right:-6px}
+  .brief{margin-top:-34px}
+  .brow .bm{display:none}
+  .row{grid-template-columns:1fr;gap:4px}
+  .dlg{padding:20px 18px}
+}
+
+@media (max-width:900px){
+  .ai.on{position:fixed;right:0;top:0;bottom:0;width:min(420px,100vw);z-index:25;box-shadow:var(--shadow)}
+  .ai-in{width:min(420px,100vw)}
+  .col{padding:100px 22px 45vh}
+  .card-grid{grid-template-columns:repeat(2,1fr)}
+  .title{font-size:32px}
+  .presets{position:static;transform:none}
+  .brand,.stat{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="main" id="main">
+    <div class="col">
+      <div class="kicker"><span class="dot"></span><span id="kicker"></span></div>
+      <input class="title" id="title" placeholder="Název" autocomplete="off" spellcheck="false">
+      <div class="card collapsed hidden" id="card"></div>
+      <div class="brief hidden" id="brief"></div>
+      <div class="edrow" id="edrow">
+        <div class="ed" id="ed">
+          <div class="mirror edtext" id="mirror"></div>
+          <textarea class="ta edtext" id="ta" spellcheck="true" lang="cs" placeholder="Piš…"></textarea>
+          <div class="eyes" id="eyes"></div>
+        </div>
+        <div class="notes" id="notes"></div>
+      </div>
+      <div class="aiview hidden" id="aiview"></div>
+    </div>
+  </div>
+
+  <aside class="ai" id="ai">
+    <div class="ai-in">
+      <div class="ai-head">
+        <div class="mark" id="aiMark">◐</div>
+        <div class="who"><div class="nm" id="aiName">Dramaturg</div><div class="ds" id="aiDesc"></div></div>
+        <button class="ib" id="aiClear" title="Nový rozhovor"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7"/><path d="M4 4v4h4"/></svg></button>
+        <button class="ib" id="aiClose" title="Zavřít (⌘J)"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="msgs" id="msgs"></div>
+      <div class="compose" id="compose">
+        <div class="ctx">
+          <label><input type="checkbox" id="sendDoc" checked> posílat dokument</label>
+          <label id="webWrap"><input type="checkbox" id="useWeb"> web</label>
+          <span class="selinfo" id="selInfo"></span>
+        </div>
+        <div class="cbox">
+          <textarea id="q" rows="1" placeholder="Zeptej se na cokoli k filmu…"></textarea>
+          <button class="send" id="sendBtn" title="Odeslat (Enter)"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+      <div class="keycard hidden" id="keycard">
+        <b>Konzultace potřebují API klíč Anthropic.</b><br>
+        Najdeš ho na console.anthropic.com v části API Keys. Klíč zůstává jen v tomhle prohlížeči a posílá se přímo na api.anthropic.com.
+        <input id="keyInput" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <button class="btn pri" id="keySave">Uložit klíč</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<header class="top" id="top">
+  <button class="ib" id="docsBtn" title="Dokumenty (⌘O)"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h13"/></svg></button>
+  <div class="brand">Nok<b>turno</b></div>
+  <nav class="presets" id="presets"></nav>
+  <div class="spacer"></div>
+  <span class="saved" id="saved" title="Uloženo"></span>
+  <span class="stat" id="stat"></span>
+  <button class="ib hidden" id="eyeBtn" title="Pohled AI vedle sekcí (⌘E)"><svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg></button>
+  <button class="ib" id="focusBtn" title="Soustředění – ztlumí ostatní odstavce (⌘⇧F)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 12h3M18 12h3M12 3v3M12 18v3"/></svg></button>
+  <button class="ib" id="twBtn" title="Psací stroj – aktuální řádek drží uprostřed"><svg viewBox="0 0 24 24"><path d="M4 9h16M4 15h16" opacity=".35"/><path d="M4 12h16"/></svg></button>
+  <button class="ib" id="themeBtn" title="Motiv"><svg viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
+  <button class="ib cloud hidden" id="cloudBtn" title="Google Disk"><svg viewBox="0 0 24 24"><path d="M7 18h10.5a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.6 9.1 4.5 4.5 0 0 0 7 18z"/></svg></button>
+  <button class="ib" id="setBtn" title="Nastavení"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/></svg></button>
+  <button class="ib" id="aiBtn" title="Konzultace (⌘J)"><svg viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></svg></button>
+  <button class="ib" id="fsBtn" title="Na celou obrazovku (⌘⇧↵)"></button>
+</header>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer">
+  <div class="dr-head"><h3>Dokumenty</h3><button class="btn pri" id="newDoc">Nový</button></div>
+  <input class="search" id="dsearch" placeholder="Hledat…">
+  <div class="dr-filter"><button id="fPreset" class="on">Tento preset</button><button id="fAll">Všechny</button></div>
+  <div class="dlist" id="dlist"></div>
+  <div class="dr-foot">
+    <button class="btn ghost" id="expMd">Export .md</button>
+    <button class="btn ghost" id="expAll">Záloha</button>
+    <button class="btn ghost" id="impAll">Obnovit ze zálohy</button>
+    <input type="file" id="impFile" accept=".json" class="hidden">
+  </div>
+</aside>
+
+<div class="modal" id="setModal"><div class="dlg">
+  <h2>Nastavení</h2>
+  <div class="sub">Dokumenty se ukládají v tomhle prohlížeči. Když připojíš Google Disk, ukládají se i tam a uvidíš je na všech zařízeních. Bez Disku si občas udělej zálohu z panelu Dokumenty.</div>
+  <div class="row"><label>Motiv</label><div class="seg" id="themeSeg">
+    <button data-t="noc">Noc</button><button data-t="uhel">Uhel</button><button data-t="papir">Papír</button></div></div>
+  <div class="row"><label>Velikost písma</label><div class="inline"><input type="range" id="fsRange" min="15" max="26" step="1" style="flex:1;accent-color:var(--acc)"><span id="fsVal" class="stat"></span></div></div>
+  <div class="row"><label>API klíč</label><div><input class="inp" id="setKey" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" style="font-family:var(--mono);font-size:12px">
+    <div class="hint">Posílá se přímo na api.anthropic.com, nikam jinam.</div></div></div>
+  <div class="row"><label>Model</label><div><select class="inp" id="setModel">
+    <option value="claude-opus-5-5">Claude Opus 5.5 – nejlepší rozbory</option>
+    <option value="claude-sonnet-5-5">Claude Sonnet 5.5 – rychlejší a levnější</option>
+    <option value="claude-haiku-5-5">Claude Haiku 5.5 – nejrychlejší</option>
+  </select></div></div>
+  <div class="row"><label>Hloubka přemýšlení</label><div><div class="seg" id="effSeg">
+    <button data-e="low">Rychle</button><button data-e="medium">Vyváženě</button><button data-e="high">Důkladně</button></div>
+    <div class="hint">Důkladně se hodí na rozbory, rychle na drobné dotazy.</div></div></div>
+  <div class="row"><label>Google Disk</label><div>
+    <div class="inline"><input class="inp" id="setClient" placeholder="Client ID z Google Cloud (….apps.googleusercontent.com)" autocomplete="off" spellcheck="false" style="font-family:var(--mono);font-size:11.5px">
+      <button class="btn" id="gdBtn">Připojit</button></div>
+    <div class="gdline" id="gdLine">Dokumenty a presety se synchronizují do složky Nokturno na tvém Disku. API klíč k AI se nesynchronizuje, na každém zařízení se zadává zvlášť.</div></div></div>
+  <div class="dlg-foot"><button class="btn pri" id="setClose">Hotovo</button></div>
+</div></div>
+
+<div class="modal" id="preModal"><div class="dlg">
+  <h2 id="preH">Preset</h2>
+  <div class="sub">Preset určuje šablonu nového dokumentu, údaje na kartě a agenta, se kterým dokument konzultuješ.</div>
+  <div class="row"><label>Název</label><div class="inline"><input class="inp" id="pName" style="width:46px;text-align:center" maxlength="2" title="Znak"><input class="inp" id="pTitle"><input type="color" id="pColor" title="Barva"></div></div>
+  <div class="row"><label>Agent</label><div class="inline"><input class="inp" id="pAgent" placeholder="Jméno agenta"><input class="inp" id="pAgentDesc" placeholder="krátký popis"></div></div>
+  <div class="row"><label>Instrukce agenta</label><div><textarea class="inp" id="pSystem" rows="9"></textarea><div class="hint">Kdo agent je, jak mluví, na co si dává pozor. Aktuální dokument mu aplikace přikládá sama.</div></div></div>
+  <div class="row"><label>Šablona</label><div><textarea class="inp mono" id="pTemplate" rows="7"></textarea></div></div>
+  <div class="row"><label>Údaje na kartě</label><div><textarea class="inp mono" id="pFields" rows="6"></textarea>
+    <div class="hint">Jeden údaj na řádek. <code>!</code> na začátku = vidět vždy. Na konci typ: <code>[datum]</code>, <code>[hodnocení]</code>, <code>[ano/ne]</code>, <code>[široké]</code>, <code>[moje]</code> (agent ho nedoplňuje).</div></div></div>
+  <div class="row"><label>Rychlé akce</label><div><textarea class="inp mono" id="pActions" rows="6"></textarea>
+    <div class="hint">Jedna akce na řádek: <code>Název :: co má agent udělat</code>. Akce <code>Doplnit kartu</code> se pozná sama.</div></div></div>
+  <div class="row"><label>Web</label><label style="padding-top:8px;display:flex;gap:6px;align-items:center;color:var(--ink2);font-size:12.5px"><input type="checkbox" id="pWeb"> agent smí vyhledávat na webu</label></div>
+  <div class="dlg-foot">
+    <div class="l"><button class="btn danger" id="pDel">Smazat</button><button class="btn ghost" id="pReset">Obnovit výchozí</button><button class="btn ghost" id="pDup">Duplikovat</button></div>
+    <button class="btn ghost" id="pCancel">Zrušit</button><button class="btn pri" id="pSave">Uložit</button>
+  </div>
+</div></div>
+
+<div class="sheet" id="sheet"><div class="sh-h"><span id="shT"></span><button class="lnk" id="shTake">převzít</button><button class="lnk" id="shX">zavřít</button></div><div class="sh-b m-a" id="shB"></div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ═══════════════ presety ═══════════════ */
+const COMMON_SYSTEM = `
+
+Kontext aplikace: Píšeš v psací aplikaci Nokturno. Vilémovy zprávy mohou obsahovat aktuální stav dokumentu v <dokument> (název, karta s údaji, text) a někdy i <výběr> s úryvkem, na který se ptá. Dokument se mezi zprávami mění a vždycky platí jeho nejnovější verze. Neopakuj dokument zpátky celý. Odpovídej česky.`;
+
+const BUILTIN = [{
+  id:'film', builtin:true, glyph:'◐', name:'Film', accent:'#d6a15c',
+  agentName:'Dramaturg', agentDesc:'filmový znalec · kamera, střih, kontext', web:true,
+  placeholder:'Název filmu', ask:'Zeptej se na cokoli k filmu…',
+  brief:true,
+  briefIntro:'Připrav podklady k filmu pro psací aplikaci Nokturno. Piš jako filmový znalec a dramaturg, který film dobře zná.',
+  briefHints:{
+    'První dojem':'tón, nálada a co film udělá s divákem, jak působí na tebe',
+    'Příběh a stavba':'struktura, tempo vyprávění, zlomy, jak film pracuje s časem',
+    'Postavy a herectví':'klíčové postavy, herecké výkony a konkrétní herecké volby',
+    'Režie a mizanscéna':'režijní rukopis, inscenace v prostoru, blocking, práce s herci',
+    'Kamera a světlo':'formát a poměr stran, objektivy, pohyb kamery, kompozice, světelné schéma, barevnost',
+    'Střih a rytmus':'délka záběrů, přechody, rytmus, montáž',
+    'Zvuk a hudba':'zvukový design, ticho, hudba a jak je použitá',
+    'Témata a motivy':'o čem film doopravdy je, motivy a symboly, které se opakují',
+    'Scény, které zůstaly':'3 až 5 klíčových scén jako odrážky „- popis“. Timecode uveď, jen když si jím jsi jistý',
+    'Citáty':'jen repliky, které ve filmu opravdu zazní a jsi si jimi jistý, jako citace „> …“. Jinak prázdný řetězec',
+    'Souvislosti':'vznik, místo v tvorbě režiséra, dobový kontext, vliv na další filmy',
+    'Verdikt':'tvůj celkový názor ve 2 až 3 větách, silné i slabé stránky'
+  },
+  fields:[
+    {k:'year',l:'Rok',key:1},{k:'director',l:'Režie',key:1},{k:'dop',l:'Kamera',key:1},
+    {k:'original',l:'Originální název',sec:1},{k:'writer',l:'Scénář',sec:1},{k:'editor',l:'Střih',sec:1},
+    {k:'music',l:'Hudba',sec:1},{k:'country',l:'Země',sec:1},{k:'runtime',l:'Délka',sec:1},
+    {k:'genre',l:'Žánr',sec:1},{k:'format',l:'Formát · poměr stran',sec:1},{k:'cast',l:'Hrají',sec:1,wide:1},
+    {k:'seen',l:'Zhlédnuto',t:'date',own:1,key:1},{k:'where',l:'Kde · jak',own:1,key:1},{k:'with',l:'S kým',own:1,sec:1},
+    {k:'rating',l:'Hodnocení',t:'rating',own:1,key:1},{k:'again',l:'Znovu?',t:'toggle',own:1,key:1}
+  ],
+  template:`## První dojem
+
+
+## Příběh a stavba
+
+
+## Postavy a herectví
+
+
+## Režie a mizanscéna
+
+
+## Kamera a světlo
+
+
+## Střih a rytmus
+
+
+## Zvuk a hudba
+
+
+## Témata a motivy
+
+
+## Scény, které zůstaly
+- 00:00:00 –
+
+## Citáty
+>
+
+## Souvislosti
+
+
+## Verdikt
+`,
+  system:`Jsi Dramaturg, filmový znalec a spoluautor poznámek. Vilém si po zhlédnutí filmu píše propracované poznámky, často v noci, a s tebou je konzultuje.
+
+Kdo je Vilém: dělá 3D, rendering a compositing v Blenderu. Rozumí kameře, objektivům, světlu, barvě, střihu, timecodu a vizuálním efektům. Mluv s ním na úrovni řemesla a základy nevysvětluj.
+
+Jak pracuješ:
+- Pracuješ s jeho poznámkami, ne místo nich. Jeho názor patří jemu. Když s ním nesouhlasíš, řekni to otevřeně a konkrétně a opři to o scénu nebo o volbu tvůrců.
+- Buď konkrétní: scény, záběry, ohnisko a pohyb kamery, kompozice, světelné schéma, barevnost, rytmus střihu, zvukový design, hudba, herecké volby. Vyhni se prázdným frázím jako „vizuálně působivé“ nebo „silný zážitek“.
+- Fakta (rok, štáb, formát, kamera a objektivy, obsazení, okolnosti vzniku) uváděj, jen když si jsi jistý. Jinak to přiznej, nebo je vyhledej na webu, pokud to máš k dispozici. Nikdy si nevymýšlej citace z filmu, timecody, ocenění ani výroky tvůrců.
+- Spoilery jsou v pořádku, protože film už viděl. Kdyby z poznámek vyplývalo, že ho teprve uvidí, spoilery vynech.
+- Piš úsporně. Markdown používej střídmě (krátké nadpisy, odrážky). Žádná vata a žádné opakování toho, co už v poznámkách stojí.
+- Když navrhuješ text přímo do poznámek, piš ho jeho hlasem, v první osobě a střídmě, a dej ho do citace (řádky začínající „> “), aby šel rovnou vložit.
+
+Poznámky mají tyto vrstvy: První dojem · Příběh a stavba · Postavy a herectví · Režie a mizanscéna · Kamera a světlo · Střih a rytmus · Zvuk a hudba · Témata a motivy · Scény, které zůstaly (s timecodem) · Citáty · Souvislosti · Verdikt. Nemusí být vyplněné všechny. Pomáhej tam, kde je text tenký.
+
+Dobrá otázka míří na konkrétní moment filmu („Co se v tobě změnilo, když…?“), ne na obecný dojem („Jak se ti film líbil?“).`,
+  actions:[
+    {l:'Vyzpovídej mě', p:'Přečti si moje poznámky a polož mi 3 až 5 otázek, které mi pomůžou je prohloubit. Ptej se na konkrétní místa filmu a na to, co jsem napsal jen napůl. Napiš jen očíslované otázky.'},
+    {l:'Co mi uniká', p:'Které vrstvy filmu jsem v poznámkách přešel, nebo jen naťukl? U každé jednou dvěma větami řekni, čeho si všimnout při druhém zhlédnutí. Konkrétně, ne obecně.'},
+    {l:'Řemeslo', p:'Rozeber kameru, světlo, střih a zvuk tohoto filmu: konkrétní volby (formát, objektivy, pohyb kamery, barevnost, rytmus, zvukový design) a co dělají s divákem. Co nevíš jistě, označ.'},
+    {l:'Kontext', p:'Zasaď film do kontextu: jak vznikal, v jaké době, jaké místo má v tvorbě režiséra a jak byl přijat. Stručně, jen to, co se mi do poznámek hodí.'},
+    {l:'Příbuzné filmy', p:'Doporuč 5 filmů, které si s tímhle povídají. U každého jednou větou řekni, v čem přesně (motiv, forma, řemeslo). Vyhni se samozřejmostem.'},
+    {l:'Učeš text', p:'Projdi můj text jako redaktor. Nepřepisuj ho celý. Vypiš nejvýš 6 konkrétních míst ve tvaru citace → návrh, kde je text mlhavý, opakuje se, nebo se dá říct přesněji. Zachovej můj hlas.'},
+    {l:'Verdikt', p:'Z mých poznámek zformuluj návrh verdiktu: 3 až 4 věty mým hlasem do citace. Pak jednou větou napiš, co by verdikt měl obsahovat a v poznámkách zatím chybí.'},
+    {l:'Doplnit kartu', fill:true}
+  ]
+}];
+
+/* ═══════════════ úložiště ═══════════════ */
+const DB = {
+  db:null,
+  open(){ return new Promise((res,rej)=>{ const r=indexedDB.open('nokturno',1);
+    r.onupgradeneeded=()=>{ const d=r.result; d.createObjectStore('docs',{keyPath:'id'}); d.createObjectStore('kv'); };
+    r.onsuccess=()=>{ this.db=r.result; res(); }; r.onerror=()=>rej(r.error); }); },
+  tx(s,m){ return this.db.transaction(s,m).objectStore(s); },
+  req(r){ return new Promise((res,rej)=>{ r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); },
+  all(){ return this.req(this.tx('docs','readonly').getAll()); },
+  put(d){ return this.req(this.tx('docs','readwrite').put(d)); },
+  del(id){ return this.req(this.tx('docs','readwrite').delete(id)); },
+  get(k){ return this.req(this.tx('kv','readonly').get(k)); },
+  set(k,v){ return this.req(this.tx('kv','readwrite').put(v,k)); }
+};
+
+/* ═══════════════ stav ═══════════════ */
+const $ = s => document.querySelector(s);
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clone = o => JSON.parse(JSON.stringify(o));
+
+let settings = { theme:'noc', fs:19, focus:false, tw:false, apiKey:'', model:'claude-opus-5-5', effort:'medium',
+  preset:'film', aiOpen:false, cardOpen:false, listAll:false, noFallback:false, noWeb:false };
+let custom = { overrides:{}, presets:[] };    // úpravy vestavěných + vlastní presety
+let docs = [];
+let doc = null;
+let busy = null;                               // AbortController běžícího dotazu
+
+const presets = () => [...BUILTIN.map(b => ({...clone(b), ...(custom.overrides[b.id]||{})})), ...custom.presets];
+const P = id => presets().find(p => p.id === id) || presets()[0];
+const saveSettings = () => DB.set('settings', settings);
+const saveCustom = () => { custom.updated = Date.now(); custom.rev = (custom.rev||0) + 1; GD.soon(); return DB.set('custom', custom); };
+
+function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove('on'),2400); }
+
+/* ═══════════════ motiv a preset ═══════════════ */
+function applyTheme(){
+  document.documentElement.dataset.theme = settings.theme;
+  document.documentElement.style.setProperty('--fs', settings.fs+'px');
+  $('#focusBtn').classList.toggle('on', settings.focus);
+  $('#twBtn').classList.toggle('on', settings.tw);
+}
+function applyPreset(){
+  const p = P(settings.preset);
+  document.documentElement.style.setProperty('--acc', p.accent || '#d6a15c');
+  renderPresetBar(); renderAiHead();
+}
+function renderPresetBar(){
+  const nav = $('#presets');
+  nav.innerHTML = presets().map(p => `<button class="pill ${p.id===settings.preset?'active':''}" data-id="${p.id}" title="${esc(p.agentName||'')} · dvojklik upraví"><span class="g">${esc(p.glyph||'•')}</span>${esc(p.name)}</button>`).join('')
+    + `<button class="pill add" id="addPreset" title="Nový preset">+</button>`;
+  nav.querySelectorAll('.pill[data-id]').forEach(b => {
+    b.onclick = () => switchPreset(b.dataset.id);
+    b.ondblclick = () => openPresetEditor(b.dataset.id);
+  });
+  $('#addPreset').onclick = () => openPresetEditor(null);
+}
+async function switchPreset(id){
+  if (id === settings.preset && doc) return;
+  settings.preset = id; saveSettings(); applyPreset();
+  const last = docs.filter(d => d.preset === id).sort((a,b)=>b.updated-a.updated)[0];
+  if (last) openDoc(last.id); else await newDoc();
+}
+
+/* ═══════════════ dokumenty ═══════════════ */
+async function newDoc(){
+  const p = P(settings.preset);
+  const meta = {};
+  if (p.fields.some(f=>f.k==='seen')) meta.seen = new Date().toISOString().slice(0,10);
+  const d = { id:uid(), preset:p.id, title:'', meta, body:p.template||'', created:Date.now(), updated:Date.now(),
+    chat:{api:[], view:[]}, lastSent:'', ai:null, view:{open:{}, aiOnly:false} };
+  docs.push(d); await DB.put(d);
+  openDoc(d.id);
+  $('#title').focus();
+  return d;
+}
+function openDoc(id){
+  doc = docs.find(d => d.id === id);
+  if (!doc) return;
+  if (doc.preset !== settings.preset){ settings.preset = doc.preset; applyPreset(); }
+  settings.lastDoc = id; saveSettings();
+  const p = P(doc.preset);
+  $('#title').value = doc.title;
+  $('#title').placeholder = p.placeholder || 'Název';
+  ta.value = doc.body;
+  ta.setSelectionRange(0,0);
+  briefActions = false;
+  renderCard(); renderBrief(); renderNotes(); renderKicker(); renderChat(); renderDocList(); updateStat();
+  $('#main').scrollTop = 0;
+}
+let saveT = null;
+function touch(){
+  doc.updated = Date.now(); doc.rev = (doc.rev||0) + 1;
+  $('#saved').classList.add('dirty');
+  clearTimeout(saveT);
+  const d = doc;
+  saveT = setTimeout(async () => { saveT = null; await DB.put(d); $('#saved').classList.remove('dirty'); renderDocList(); }, 450);
+  GD.soon();
+}
+async function flushSave(){
+  if (!saveT) return;
+  clearTimeout(saveT); saveT = null; await DB.put(doc); $('#saved').classList.remove('dirty');
+}
+async function deleteDoc(id){
+  const d = docs.find(x=>x.id===id);
+  if (!confirm(`Smazat „${d.title||'bez názvu'}“?${settings.driveOn ? ' Na Disku se přesune do koše.' : ' Nejde to vrátit.'}`)) return;
+  docs = docs.filter(x=>x.id!==id); await DB.del(id);
+  if (d.drive){ const dead = (await DB.get('deleted')) || []; dead.push(id); await DB.set('deleted', dead); GD.soon(); }
+  if (doc && doc.id===id){ const nx = docs.filter(x=>x.preset===settings.preset).sort((a,b)=>b.updated-a.updated)[0]; nx ? openDoc(nx.id) : newDoc(); }
+  renderDocList();
+}
+function subtitle(d){
+  const m = d.meta||{};
+  if (d.preset==='film'){ const s=[m.year,m.director].filter(Boolean).join(' · '); if (s) return s; }
+  const line = (d.body||'').split('\n').find(l => l.trim() && !/^#|^-\s*00:00|^>\s*$/.test(l.trim()));
+  return line ? line.slice(0,60) : '';
+}
+function renderDocList(){
+  if (!$('#drawer').classList.contains('on')) return;
+  const q = $('#dsearch').value.trim().toLowerCase();
+  let list = docs.slice().sort((a,b)=>b.updated-a.updated);
+  if (!settings.listAll) list = list.filter(d => d.preset===settings.preset);
+  if (q) list = list.filter(d => (d.title+' '+d.body+' '+Object.values(d.meta||{}).join(' ')).toLowerCase().includes(q));
+  $('#fPreset').classList.toggle('on', !settings.listAll); $('#fAll').classList.toggle('on', settings.listAll);
+  const fmt = new Intl.DateTimeFormat('cs-CZ',{day:'numeric',month:'numeric'});
+  $('#dlist').innerHTML = list.map(d => {
+    const p = P(d.preset), r = +(d.meta||{}).rating || 0;
+    const dots = r ? `<span class="mini-r">${Array.from({length:10},(_,i)=>`<i class="${i<r?'on':''}"></i>`).join('')}</span>` : '';
+    return `<div class="ditem ${doc&&d.id===doc.id?'cur':''}" data-id="${d.id}" style="--pacc:${p.accent}">
+      <div class="t">${esc(d.title||'Bez názvu')}</div>
+      <div class="s">${settings.listAll?`<span class="pg">${esc(p.glyph)} ${esc(p.name)}</span>`:''}<span>${fmt.format(d.updated)}</span>${dots}<span>${esc(subtitle(d))}</span></div>
+      <button class="x" title="Smazat" data-del="${d.id}">×</button></div>`;
+  }).join('') || `<div class="empty-ai" style="padding:14px 10px">Nic tu není.</div>`;
+  $('#dlist').querySelectorAll('.ditem').forEach(el => el.onclick = e => {
+    if (e.target.dataset.del) { e.stopPropagation(); deleteDoc(e.target.dataset.del); return; }
+    openDoc(el.dataset.id); closeDrawer();
+  });
+}
+function openDrawer(){ $('#drawer').classList.add('on'); $('#scrim').classList.add('on'); renderDocList(); setTimeout(()=>$('#dsearch').focus(),50); }
+function closeDrawer(){ $('#drawer').classList.remove('on'); $('#scrim').classList.remove('on'); }
+function renderKicker(){
+  const p = P(doc.preset);
+  const fmt = new Intl.DateTimeFormat('cs-CZ',{day:'numeric',month:'long',year:'numeric'});
+  $('#kicker').textContent = `${p.name} · ${fmt.format(doc.created)}`;
+}
+
+/* ═══════════════ karta s údaji ═══════════════ */
+function renderCard(){
+  const p = P(doc.preset), card = $('#card');
+  if (!p.fields || !p.fields.length){ card.classList.add('hidden'); return; }
+  card.classList.remove('hidden');
+  card.classList.toggle('collapsed', !settings.cardOpen);
+  const m = doc.meta || (doc.meta = {});
+  const hasSec = p.fields.some(f=>f.sec);
+  card.innerHTML = `<div class="card-grid">${p.fields.map(f => {
+    const cls = `fld ${f.sec?'sec':''} ${f.wide?'wide':''}`;
+    const v = m[f.k] ?? '';
+    let ctl;
+    if (f.t==='rating') ctl = `<div class="rating" data-k="${f.k}">${Array.from({length:10},(_,i)=>`<i data-v="${i+1}" class="${i<+v?'on':''}"></i>`).join('')}<span>${v?v+'/10':''}</span></div>`;
+    else if (f.t==='toggle') ctl = `<button class="tog ${v?'v':''}" data-k="${f.k}">${v||'—'}</button>`;
+    else if (f.t==='date') ctl = `<input type="date" data-k="${f.k}" value="${esc(v)}">`;
+    else ctl = `<input data-k="${f.k}" value="${esc(v)}" placeholder="—" autocomplete="off" spellcheck="false">`;
+    return `<div class="${cls}"><label>${esc(f.l)}</label>${ctl}</div>`;
+  }).join('')}</div>
+  <div class="card-more">${hasSec?`<button class="lnk" id="cardToggle">${settings.cardOpen?'méně údajů':'další údaje'}</button>`:''}
+  ${p.actions.some(a=>a.fill)?`<button class="lnk" id="cardFill">✦ doplnit z AI</button>`:''}</div>`;
+  card.querySelectorAll('input[data-k]').forEach(inp => inp.oninput = () => { m[inp.dataset.k] = inp.value; touch(); });
+  card.querySelectorAll('.tog').forEach(b => b.onclick = () => {
+    const cyc = ['', 'ano', 'ne', 'možná']; const k=b.dataset.k;
+    m[k] = cyc[(cyc.indexOf(m[k]||'')+1)%cyc.length]; b.textContent = m[k]||'—'; b.classList.toggle('v',!!m[k]); touch();
+  });
+  card.querySelectorAll('.rating').forEach(r => {
+    const dots = [...r.querySelectorAll('i')], k = r.dataset.k;
+    const paint = (n, pv) => dots.forEach((d,i) => { d.classList.toggle('on', !pv && i<n); d.classList.toggle('pv', pv && i<n); });
+    dots.forEach(d => {
+      d.onmouseenter = () => paint(+d.dataset.v, true);
+      d.onclick = () => { const n=+d.dataset.v; m[k] = (+m[k]===n) ? '' : n; paint(+m[k]||0,false); r.querySelector('span').textContent = m[k]?m[k]+'/10':''; touch(); };
+    });
+    r.onmouseleave = () => paint(+m[k]||0, false);
+  });
+  const t = $('#cardToggle'); if (t) t.onclick = () => { settings.cardOpen=!settings.cardOpen; saveSettings(); renderCard(); };
+  const fl = $('#cardFill'); if (fl) fl.onclick = () => { openAi(true); runAction(p.actions.find(a=>a.fill)); };
+}
+
+/* ═══════════════ editor ═══════════════ */
+const ta = $('#ta'), mirror = $('#mirror'), main = $('#main');
+const INL = /(\*\*[^*\n]+?\*\*)|(\*[^*\s][^*\n]*?\*)|(`[^`\n]+`)|(\b\d{1,2}:\d{2}(?::\d{2})?\b)/g;
+function inlineSegs(s){
+  const out=[]; let i=0, m; INL.lastIndex=0;
+  while ((m = INL.exec(s))){
+    if (m.index>i) out.push({t:s.slice(i,m.index), c:''});
+    const x = m[0];
+    if (m[1]) out.push({t:'**',c:'mk'},{t:x.slice(2,-2),c:'b'},{t:'**',c:'mk'});
+    else if (m[2]) out.push({t:'*',c:'mk'},{t:x.slice(1,-1),c:'i'},{t:'*',c:'mk'});
+    else if (m[3]) out.push({t:x,c:'code'});
+    else out.push({t:x,c:'tc'});
+    i = m.index + x.length;
+  }
+  if (i<s.length) out.push({t:s.slice(i), c:''});
+  return out;
+}
+function lineSegs(line){
+  let m;
+  if (/^\s*(-{3,}|\*{3,}|_{3,})\s*$/.test(line)) return {cls:'hr', segs:[{t:line,c:'mk'}]};
+  if ((m = line.match(/^(#{1,6})(\s+)/))) return {cls:'h h'+Math.min(3,m[1].length), segs:[{t:m[0],c:'mk'}, ...inlineSegs(line.slice(m[0].length))]};
+  if ((m = line.match(/^>\s?/))) return {cls:'q', segs:[{t:m[0],c:'mk'}, ...inlineSegs(line.slice(m[0].length))]};
+  if ((m = line.match(/^(\s*)([-*+•–]|\d+[.)])(\s+)/))) return {cls:'li', segs:[{t:m[0],c:'bul'}, ...inlineSegs(line.slice(m[0].length))]};
+  return {cls:'', segs:inlineSegs(line)};
+}
+const CM = '<span id="cm"></span>';
+function emit(segs, at){
+  let h='', pos=0;
+  for (const s of segs){
+    const n = s.t.length;
+    const sp = t => t ? (s.c ? `<span class="${s.c}">${esc(t)}</span>` : esc(t)) : '';
+    if (at>=pos && at<pos+n){ h += sp(s.t.slice(0,at-pos)) + CM + sp(s.t.slice(at-pos)); at=-1; }
+    else h += sp(s.t);
+    pos += n;
+  }
+  if (at>=0 && at===pos) h += CM;
+  return h;
+}
+function render(){
+  const v = ta.value, caret = ta.selectionEnd;
+  const lines = v.split('\n');
+  let off=0, cl=0;
+  const starts = lines.map(l => { const s=off; off += l.length+1; return s; });
+  for (let i=0;i<lines.length;i++) if (caret>=starts[i]) cl=i;
+  let a=cl, b=cl;
+  if (lines[cl].trim()){ while (a>0 && lines[a-1].trim()) a--; while (b<lines.length-1 && lines[b+1].trim()) b++; }
+  let html='';
+  for (let i=0;i<lines.length;i++){
+    const {cls, segs} = lineSegs(lines[i]);
+    const dim = settings.focus && document.activeElement===ta && (i<a || i>b) ? ' dim' : '';
+    const inner = emit(segs, i===cl ? caret-starts[i] : -1);
+    const hm = cls.startsWith('h') && lines[i].match(/^#{1,6}\s+(.+?)\s*$/);
+    html += `<div class="${cls}${dim}"${hm ? ` data-h="${esc(hm[1])}"` : ''}>${inner || ''}${lines[i].length ? '' : '<br>'}</div>`;
+  }
+  mirror.innerHTML = html;
+  layoutNotes();
+}
+function keepCaret(force){
+  const cm = document.getElementById('cm'); if (!cm) return;
+  const r = cm.getBoundingClientRect(), sr = main.getBoundingClientRect();
+  if (settings.tw){ main.scrollTop += (r.top - sr.top) - sr.height*0.42; return; }
+  const lh = parseFloat(getComputedStyle(ta).lineHeight) || 34;
+  if (r.top + lh > sr.bottom - 110) main.scrollTop += r.top + lh - (sr.bottom - 110);
+  else if (force && r.top < sr.top + 70) main.scrollTop -= (sr.top + 70 - r.top);
+}
+function updateStat(){
+  const t = ta.value.replace(/^#+\s.*$/gm,'').replace(/[>*`#\-–]/g,' ');
+  const w = (t.match(/[\p{L}\p{N}]+/gu)||[]).length;
+  $('#stat').textContent = `${w.toLocaleString('cs-CZ')} slov · ${Math.max(1,Math.round(w/200))} min`;
+}
+let typingT=null;
+ta.addEventListener('input', () => {
+  doc.body = ta.value; touch(); render(); keepCaret(); updateStat();
+  document.body.classList.add('typing'); clearTimeout(typingT); typingT = setTimeout(()=>document.body.classList.remove('typing'), 2200);
+});
+let rafSel=0;
+document.addEventListener('selectionchange', () => {
+  if (document.activeElement !== ta) return;
+  cancelAnimationFrame(rafSel); rafSel = requestAnimationFrame(() => { render(); updateSelInfo(); });
+});
+ta.addEventListener('keyup', e => { if (/Arrow|Page|Home|End/.test(e.key)) keepCaret(true); });
+ta.addEventListener('focus', render);
+ta.addEventListener('blur', () => setTimeout(render, 0));
+ta.addEventListener('scroll', () => { ta.scrollTop = 0; });
+window.addEventListener('mousemove', () => document.body.classList.remove('typing'));
+
+function insertText(str){ ta.focus(); document.execCommand('insertText', false, str); }
+function wrapSel(mk){
+  const s=ta.selectionStart, e=ta.selectionEnd, v=ta.value, t=v.slice(s,e);
+  if (t.startsWith(mk) && t.endsWith(mk) && t.length>=mk.length*2){ insertText(t.slice(mk.length,-mk.length)); ta.setSelectionRange(s, e-mk.length*2); return; }
+  insertText(mk+t+mk);
+  if (!t) ta.setSelectionRange(s+mk.length, s+mk.length); else ta.setSelectionRange(s+mk.length, e+mk.length);
+}
+function setHeading(level){
+  const v=ta.value, s=ta.selectionStart;
+  const ls = v.lastIndexOf('\n', s-1)+1; let le = v.indexOf('\n', s); if (le<0) le=v.length;
+  const line = v.slice(ls, le), bare = line.replace(/^#{1,6}\s+/, '');
+  const cur = (line.match(/^(#{1,6})\s/)||[,''])[1].length;
+  ta.setSelectionRange(ls, le); insertText((cur===level ? '' : '#'.repeat(level)+' ') + bare);
+}
+ta.addEventListener('keydown', e => {
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key==='b'){ e.preventDefault(); wrapSel('**'); return; }
+  if (mod && e.key==='i'){ e.preventDefault(); wrapSel('*'); return; }
+  if (mod && ['1','2','3'].includes(e.key)){ e.preventDefault(); setHeading(+e.key); return; }
+  if (e.key==='Enter' && !e.shiftKey && !mod && ta.selectionStart===ta.selectionEnd){
+    const v=ta.value, s=ta.selectionStart, ls=v.lastIndexOf('\n', s-1)+1, line=v.slice(ls, s);
+    const m = line.match(/^(\s*)([-*+•–]|(\d+)([.)]))(\s+)(.*)$/) || line.match(/^(>)(\s?)(.*)$/);
+    if (m && line.startsWith('>')){
+      e.preventDefault();
+      if (!line.replace(/^>\s?/,'').trim()){ ta.setSelectionRange(ls, s); insertText(''); } else insertText('\n> ');
+      return;
+    }
+    if (m){
+      e.preventDefault();
+      if (!m[6].trim()){ ta.setSelectionRange(ls, s); insertText(''); return; }
+      let bul = m[3] ? (+m[3]+1)+m[4] : m[2];
+      insertText('\n'+m[1]+bul+m[5]);
+      return;
+    }
+  }
+  if (e.key==='Tab' && !mod){ e.preventDefault(); insertText('    '); }
+});
+$('#title').addEventListener('input', e => { doc.title = e.target.value; touch(); });
+$('#title').addEventListener('keydown', e => { if (e.key==='Enter'){ e.preventDefault(); const c=$('#card'); const f=c.querySelector('input'); (f && !c.classList.contains('hidden') && !doc.meta.year) ? f.focus() : (ta.focus(), ta.setSelectionRange(0,0), render()); maybeAutoBrief(); } });
+
+/* ═══════════════ AI: komunikace s API ═══════════════ */
+const API = 'https://api.anthropic.com/v1/messages';
+function buildRequest(p, messages, opts={}){
+  const model = settings.model;
+  const body = { model, max_tokens:32000, stream:true, system:(p.system||'')+COMMON_SYSTEM, messages,
+    cache_control:{type:'ephemeral'}, output_config:{effort:settings.effort||'medium'} };
+  const headers = { 'content-type':'application/json', 'x-api-key':settings.apiKey, 'anthropic-version':'2023-06-01',
+    'anthropic-dangerous-direct-browser-access':'true' };
+  if (opts.web && !settings.noWeb)
+    body.tools = [{ type: model.includes('haiku') ? 'web_search_20250305' : 'web_search_20260209', name:'web_search', max_uses:5 }];
+  if (!settings.noFallback && (model==='claude-opus-5-5' || model==='claude-sonnet-5-5')){
+    body.fallbacks = 'default'; headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
+  }
+  return {body, headers};
+}
+async function streamOnce(req, signal, on){
+  const res = await fetch(API, {method:'POST', headers:req.headers, body:JSON.stringify(req.body), signal});
+  if (!res.ok){
+    const t = await res.text(); let msg=t; try{ msg = JSON.parse(t).error.message; }catch{}
+    const er = new Error(msg); er.status = res.status; throw er;
+  }
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf='', stop=null, stopDetails=null; const blocks=[];
+  for(;;){
+    const {value, done} = await reader.read(); if (done) break;
+    buf += dec.decode(value, {stream:true});
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0){
+      const chunk = buf.slice(0,i); buf = buf.slice(i+2);
+      const data = chunk.split('\n').filter(l=>l.startsWith('data:')).map(l=>l.slice(5).trimStart()).join('');
+      if (!data) continue;
+      let ev; try{ ev = JSON.parse(data); }catch{ continue; }
+      if (ev.type==='content_block_start'){
+        const b = clone(ev.content_block); blocks[ev.index] = b;
+        if (b.type==='server_tool_use' || b.type==='tool_use') b._json='';
+        if (b.type==='server_tool_use') on.status('hledá na webu…');
+        if (b.type==='thinking') on.status('přemýšlí…');
+        if (b.type==='web_search_tool_result' && Array.isArray(b.content)) on.sources(b.content.filter(x=>x.url).map(x=>({url:x.url,title:x.title})));
+      } else if (ev.type==='content_block_delta'){
+        const b = blocks[ev.index], d = ev.delta;
+        if (d.type==='text_delta'){ b.text += d.text; on.text(d.text); }
+        else if (d.type==='thinking_delta') b.thinking = (b.thinking||'') + d.thinking;
+        else if (d.type==='signature_delta') b.signature = d.signature;
+        else if (d.type==='input_json_delta') b._json += d.partial_json;
+        else if (d.type==='citations_delta') (b.citations || (b.citations=[])).push(d.citation);
+      } else if (ev.type==='content_block_stop'){
+        const b = blocks[ev.index];
+        if (b && '_json' in b){ try{ b.input = b._json ? JSON.parse(b._json) : (b.input||{}); }catch{} delete b._json;
+          if (b.type==='server_tool_use' && b.input && b.input.query) on.status('hledá: '+b.input.query); }
+      } else if (ev.type==='message_delta'){
+        if (ev.delta.stop_reason) stop = ev.delta.stop_reason;
+        if (ev.delta.stop_details) stopDetails = ev.delta.stop_details;
+      } else if (ev.type==='error'){
+        throw new Error(ev.error && ev.error.message || 'Chyba při streamování');
+      }
+    }
+  }
+  return { content: blocks.filter(Boolean), stop, stopDetails };
+}
+/* Pošle konverzaci a dotáhne případné pause_turn. Na 400 kvůli fallbacku nebo webu to zkusí jednou bez nich. */
+async function converse(p, messages, opts, signal, on){
+  let tries = 0;
+  for(;;){
+    try{
+      const out = []; let res;
+      for (let k=0;k<4;k++){
+        res = await streamOnce(buildRequest(p, messages.concat(out.length?[{role:'assistant',content:out.flat()}]:[]), opts), signal, on);
+        out.push(res.content);
+        if (res.stop !== 'pause_turn') break;
+      }
+      return { content: out.flat(), stop: res.stop, stopDetails: res.stopDetails };
+    }catch(e){
+      if (e.status===400 && tries===0){
+        const m = (e.message||'').toLowerCase();
+        if (m.includes('fallback') && !settings.noFallback){ settings.noFallback = true; saveSettings(); tries++; continue; }
+        if (m.includes('web_search') || m.includes('tool')){ if (!settings.noWeb){ settings.noWeb = true; saveSettings(); tries++; on.note('Vyhledávání na webu teď nejde, ptám se bez něj.'); continue; } }
+      }
+      throw e;
+    }
+  }
+}
+
+/* ═══════════════ AI: kontext dokumentu ═══════════════ */
+function docSnapshot(){
+  const p = P(doc.preset), m = doc.meta||{};
+  const card = (p.fields||[]).filter(f => m[f.k]!=='' && m[f.k]!=null).map(f => `${f.l}: ${f.t==='rating'?m[f.k]+'/10':m[f.k]}`).join('\n');
+  const body = (doc.body||'').trim();
+  return `<dokument preset="${p.name}">\n<název>${doc.title||'(bez názvu)'}</název>\n<karta>\n${card||'(prázdná)'}\n</karta>\n<text>\n${body||'(zatím prázdný)'}\n</text>\n</dokument>`;
+}
+function currentSelection(){
+  const s=ta.selectionStart, e=ta.selectionEnd;
+  return e>s ? ta.value.slice(s,e) : '';
+}
+let lastSel = '';
+function updateSelInfo(){
+  const s = currentSelection(); if (document.activeElement===ta) lastSel = s;
+  $('#selInfo').textContent = lastSel ? `výběr: „${lastSel.replace(/\s+/g,' ').slice(0,40)}${lastSel.length>40?'…':''}“` : '';
+}
+
+/* ═══════════════ AI: panel ═══════════════ */
+function renderAiHead(){
+  const p = P(settings.preset);
+  $('#aiName').textContent = p.agentName || 'Asistent';
+  $('#aiDesc').textContent = p.agentDesc || '';
+  $('#aiMark').textContent = p.glyph || '✦';
+  $('#q').placeholder = p.ask || 'Zeptej se…';
+  $('#useWeb').checked = !!p.web && !settings.noWeb;
+  $('#chips').innerHTML = (p.actions||[]).map((a,i) => `<button class="chip" data-i="${i}">${esc(a.l)}</button>`).join('');
+  $('#chips').querySelectorAll('.chip').forEach(c => c.onclick = () => runAction(P(settings.preset).actions[+c.dataset.i]));
+  const noKey = !settings.apiKey;
+  $('#keycard').classList.toggle('hidden', !noKey);
+  ['#chips','#msgs','#compose'].forEach(s => $(s).classList.toggle('hidden', noKey));
+}
+function openAi(on){
+  settings.aiOpen = on ?? !settings.aiOpen; saveSettings();
+  $('#ai').classList.toggle('on', settings.aiOpen); $('#aiBtn').classList.toggle('on', settings.aiOpen);
+  if (settings.aiOpen){ renderAiHead(); setTimeout(()=> settings.apiKey ? $('#q').focus() : $('#keyInput').focus(), 200); }
+}
+function md(src){
+  const lines = src.replace(/\r/g,'').split('\n'); let out='', list=null, para=[], quote=[], code=null;
+  const inl = s => esc(s)
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\s][^*]*?)\*/g,'$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  const flush = () => {
+    if (para.length){ out += `<p>${para.map(inl).join('<br>')}</p>`; para=[]; }
+    if (list){ out += `<${list.t}>${list.items.map(x=>`<li>${inl(x)}</li>`).join('')}</${list.t}>`; list=null; }
+    if (quote.length){ out += `<blockquote>${quote.map(inl).join('<br>')}</blockquote>`; quote=[]; }
+  };
+  for (const l of lines){
+    if (code!==null){ if (/^```/.test(l)){ out += `<pre><code>${esc(code)}</code></pre>`; code=null; } else code += l+'\n'; continue; }
+    let m;
+    if (/^```/.test(l)){ flush(); code=''; continue; }
+    if ((m = l.match(/^(#{1,4})\s+(.*)/))){ flush(); out += `<h${m[1].length}>${inl(m[2])}</h${m[1].length}>`; continue; }
+    if ((m = l.match(/^>\s?(.*)/))){ if (para.length||list) flush(); quote.push(m[1]); continue; }
+    if ((m = l.match(/^\s*(?:[-*•]|(\d+)[.)])\s+(.*)/))){
+      const t = m[1] ? 'ol' : 'ul';
+      if (para.length||quote.length||(list&&list.t!==t)) flush();
+      (list || (list={t,items:[]})).items.push(m[2]); continue;
+    }
+    if (!l.trim()){ flush(); continue; }
+    if (list || quote.length) flush();
+    para.push(l);
+  }
+  if (code!==null) out += `<pre><code>${esc(code)}</code></pre>`;
+  flush();
+  return out;
+}
+function renderChat(){
+  const box = $('#msgs'); const v = doc.chat.view;
+  if (!v.length){
+    const p = P(doc.preset);
+    box.innerHTML = `<div class="empty-ai">${esc(p.agentName||'Asistent')} vidí tvůj dokument, kartu i to, co máš v textu označené.<br><br>
+      Zkus <em>${esc((p.actions[0]||{}).l||'otázku')}</em>, nebo se zeptej po svém. Odpověď vložíš do textu tlačítkem <em>vložit</em>. Když v odpovědi něco označíš, vloží se jen to.</div>`;
+    return;
+  }
+  box.innerHTML = v.map((m,i) => m.role==='user'
+    ? `<div class="m-u">${m.label?`<span class="lab">${esc(m.label)}</span>${m.text?'\n'+esc(m.text):''}`:esc(m.text)}</div>`
+    : `<div class="m-wrap" data-i="${i}"><div class="m-a">${m.err?`<div class="err">${esc(m.err)}</div>`:md(m.text||'')}${m.note?`<div class="note">${esc(m.note)}</div>`:''}</div>
+       ${m.sources&&m.sources.length?`<div class="m-src">${uniqSrc(m.sources).slice(0,8).map(s=>`<a href="${esc(s.url)}" target="_blank" rel="noopener" title="${esc(s.title||s.url)}">${esc(host(s.url))}</a>`).join('')}</div>`:''}
+       ${m.text?`<div class="m-tools"><button class="lnk" data-ins="${i}">vložit do textu</button><button class="lnk" data-cp="${i}">kopírovat</button></div>`:''}</div>`
+  ).join('');
+  box.querySelectorAll('[data-ins]').forEach(b => b.onclick = () => insertReply(+b.dataset.ins, b));
+  box.querySelectorAll('[data-cp]').forEach(b => b.onclick = () => { navigator.clipboard.writeText(doc.chat.view[+b.dataset.cp].text); toast('Zkopírováno'); });
+  box.scrollTop = box.scrollHeight;
+}
+const host = u => { try{ return new URL(u).hostname.replace(/^www\./,''); }catch{ return u; } };
+const uniqSrc = a => { const s=new Set(); return a.filter(x => !s.has(x.url) && s.add(x.url)); };
+function insertReply(i, btn){
+  const wrap = btn.closest('.m-wrap'); const sel = window.getSelection();
+  let text = (sel && !sel.isCollapsed && wrap.contains(sel.anchorNode)) ? sel.toString() : doc.chat.view[i].text;
+  text = text.replace(/```json[\s\S]*?```/g,'').trim();
+  ta.focus();
+  if (ta.selectionStart===ta.selectionEnd && ta.selectionStart===0 && lastCaret) ta.setSelectionRange(lastCaret, lastCaret);
+  const pre = ta.value.slice(0, ta.selectionStart);
+  insertText((pre && !pre.endsWith('\n\n') ? (pre.endsWith('\n')?'\n':'\n\n') : '') + text + '\n');
+  toast('Vloženo do textu');
+}
+let lastCaret = 0;
+ta.addEventListener('blur', () => { lastCaret = ta.selectionEnd; });
+
+async function send(text, action){
+  if (busy) return;
+  if (!settings.apiKey){ openAi(true); return; }
+  const d = doc, p = P(d.preset);
+  const parts = [];
+  if ($('#sendDoc').checked){
+    const snap = docSnapshot();
+    parts.push({type:'text', text: snap===d.lastSent ? '(Dokument se od poslední zprávy nezměnil.)' : snap});
+    d.lastSent = snap;
+  }
+  if (lastSel) parts.push({type:'text', text:`<výběr>\n${lastSel}\n</výběr>`});
+  const prompt = action ? action.prompt : text;
+  parts.push({type:'text', text: prompt});
+  d.chat.view.push({role:'user', text: action ? '' : text, label: action ? action.l : ''});
+  const reply = {role:'assistant', text:'', sources:[]};
+  d.chat.view.push(reply);
+  renderChat(); setBusy(true);
+  const box = $('#msgs'); const live = box.lastElementChild.querySelector('.m-a');
+  live.innerHTML = `<div class="status">přemýšlí…</div>`;
+  let raf=0;
+  const paint = () => { live.innerHTML = md(reply.text) + (reply.statusText ? `<div class="status">${esc(reply.statusText)}</div>` : ''); box.scrollTop = box.scrollHeight; };
+  const on = {
+    text: t => { reply.text += t; reply.statusText=''; cancelAnimationFrame(raf); raf=requestAnimationFrame(paint); },
+    status: s => { reply.statusText = s; if (!reply.text) live.innerHTML = `<div class="status">${esc(s)}</div>`; else paint(); },
+    sources: s => reply.sources.push(...s),
+    note: n => { reply.note = n; }
+  };
+  const userMsg = {role:'user', content: parts};
+  const ctrl = new AbortController(); busy = ctrl;
+  try{
+    const res = await converse(p, d.chat.api.concat([userMsg]), {web: $('#useWeb').checked}, ctrl.signal, on);
+    if (res.stop==='refusal'){
+      reply.err = 'Model tuhle odpověď odmítl dokončit. Zkus otázku formulovat jinak.';
+    } else {
+      d.chat.api.push(userMsg, {role:'assistant', content: res.content});
+      if (res.stop==='max_tokens') reply.note = 'Odpověď narazila na limit délky.';
+      if (action && action.fill) applyFill(reply, p);
+    }
+  }catch(e){
+    if (e.name==='AbortError'){ reply.note = 'Zastaveno.'; }
+    else reply.err = e.status===401 ? 'API klíč nefunguje. Zkontroluj ho v Nastavení.' :
+      e.status===429 ? 'Moc dotazů najednou. Chvíli počkej.' :
+      e.message==='Failed to fetch' ? 'Nepodařilo se spojit s api.anthropic.com. Jsi online?' : ('Chyba: '+e.message);
+    d.lastSent = '';        // dotaz se nedokončil, příště pošleme dokument znovu
+  }finally{
+    reply.statusText=''; delete reply.statusText;
+    busy = null; setBusy(false); touch(); if (doc===d) renderChat();
+  }
+}
+function applyFill(reply, p){
+  const blocks = [...reply.text.matchAll(/```json\s*([\s\S]*?)```/g)];
+  if (!blocks.length) return;
+  let data; try{ data = JSON.parse(blocks[blocks.length-1][1]); }catch{ return; }
+  const done = [];
+  for (const f of p.fields){
+    if (f.own || data[f.k]==null || data[f.k]==='') continue;
+    if (doc.meta[f.k]) continue;
+    doc.meta[f.k] = String(data[f.k]); done.push(f.l);
+  }
+  if (!doc.title && data.title) { doc.title = data.title; $('#title').value = doc.title; }
+  reply.text = reply.text.replace(/```json[\s\S]*?```/g,'').trim();
+  reply.note = done.length ? `Doplněno na kartu: ${done.join(', ')}. Vyplněná pole jsem nepřepisoval.` : 'Nic nového k doplnění.';
+  if (done.length && p.fields.some(f=>f.sec && done.includes(f.l))) settings.cardOpen = true;
+  renderCard();
+}
+function runAction(a){
+  if (!a) return;
+  if (a.fill){
+    const p = P(doc.preset);
+    const keys = p.fields.filter(f=>!f.own && f.t!=='rating' && f.t!=='toggle').map(f=>`"${f.k}" (${f.l})`).join(', ');
+    const known = p.fields.filter(f=>doc.meta[f.k] && !f.own).map(f=>`${f.l}: ${doc.meta[f.k]}`).join('; ');
+    return send(null, {l:a.l, fill:true, prompt:
+      `Doplň údaje na kartu k „${doc.title||'(název zatím chybí)'}“${known?` (už vím: ${known})`:''}. Když je potřeba, ověř je na webu. Nejdřív jednou větou napiš, o které dílo jde (rok, autor), ať poznám, že jde o to správné. Pokud název není jednoznačný, vyjmenuj možnosti a JSON vynech. Jinak připoj blok \`\`\`json s klíči ${keys}${doc.title?'':', "title"'}. Hodnoty piš česky jako krátký text (délku ve formátu „118 min“, u obsazení nejvýš 5 jmen). Co nevíš jistě, vynech.`});
+  }
+  send(null, {l:a.l, prompt:a.p});
+}
+function setBusy(on){
+  const b = $('#sendBtn');
+  b.classList.toggle('stop', on);
+  b.innerHTML = on ? '<svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>' : '<svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  b.title = on ? 'Zastavit (Esc)' : 'Odeslat (Enter)';
+  $('#chips').querySelectorAll('.chip').forEach(c => c.disabled = on);
+}
+$('#sendBtn').onclick = () => { if (busy) busy.abort(); else submitQ(); };
+function submitQ(){ const q=$('#q'); const t=q.value.trim(); if (!t) return; q.value=''; autoQ(); send(t); }
+const autoQ = () => { const q=$('#q'); q.style.height='auto'; q.style.height=Math.min(180,q.scrollHeight)+'px'; };
+$('#q').addEventListener('input', autoQ);
+$('#q').addEventListener('keydown', e => { if (e.key==='Enter' && !e.shiftKey && !e.isComposing){ e.preventDefault(); submitQ(); } });
+$('#aiClear').onclick = () => { if (busy) return; if (doc.chat.view.length && !confirm('Začít nový rozhovor? Ten dosavadní zmizí.')) return; doc.chat={api:[],view:[]}; doc.lastSent=''; touch(); renderChat(); };
+$('#aiClose').onclick = () => openAi(false);
+$('#aiBtn').onclick = () => openAi();
+$('#keySave').onclick = () => { const k=$('#keyInput').value.trim(); if (!k) return; settings.apiKey=k; settings.noFallback=false; settings.noWeb=false; saveSettings(); $('#keyInput').value=''; renderAiHead(); renderChat(); $('#q').focus(); };
+$('#useWeb').onchange = e => { if (e.target.checked){ settings.noWeb=false; saveSettings(); } };
+
+/* ═══════════════ pohled AI: podklady ke kartě a k sekcím ═══════════════
+   Podklady přijdou buď z promptu, který si Vilém zkopíruje do Clauda a odpověď (JSON) vloží zpátky,
+   nebo přímo přes API. Uloží se do doc.ai.sections podle názvů nadpisů a ukazují se vedle sekcí. */
+const EYESVG = '<svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/></svg>';
+const norm = s => String(s||'').toLowerCase().replace(/\s+/g,' ').trim();
+const templateSections = p => [...(p.template||'').matchAll(/^#{1,6}\s+(.+?)[ \t]*$/gm)].map(m => m[1]);
+const docHeadings = () => [...ta.value.matchAll(/^#{1,6}\s+(.+?)[ \t]*$/gm)].map(m => m[1]);
+let briefBusy = null, briefStatus = '', briefActions = false;
+
+function viewState(){ return doc.view || (doc.view = {open:{}, aiOnly:false}); }
+function hasAi(){ return !!(doc && doc.ai && Object.values(doc.ai.sections||{}).some(v => v && v.trim())); }
+function aiSec(name){
+  const s = doc && doc.ai && doc.ai.sections; if (!s) return '';
+  const k = Object.keys(s).find(k => norm(k)===norm(name)); return k ? s[k] : '';
+}
+
+function briefPrompt(d){
+  const p = P(d.preset), m = d.meta||{};
+  const secs = templateSections(p), hints = p.briefHints||{};
+  const fields = (p.fields||[]).filter(f => !f.own && f.t!=='rating' && f.t!=='toggle');
+  const known = fields.filter(f => m[f.k]).map(f => `${f.l}: ${m[f.k]}`).join(', ');
+  const ex = { nokturno:1, film:'…', poznamka:'', karta:Object.fromEntries(fields.map(f => [f.k,'…'])), sekce:Object.fromEntries(secs.map(s => [s,'…'])) };
+  return `${p.briefIntro || 'Připrav podklady pro psací aplikaci Nokturno.'}
+
+${p.name}: ${d.title || '(název chybí)'}${known ? `\nUž vím: ${known}` : ''}
+
+Ke každé sekci napiš svůj vlastní pohled. Vilém ho bude mít vedle svých poznámek a bude ho porovnávat se svým názorem. Vilém dělá 3D, rendering a compositing, takže piš na úrovni řemesla: konkrétní scény, záběry a volby tvůrců, žádné obecné fráze. Piš v první osobě a měj vlastní názor. Spoilery jsou v pořádku.
+
+Co patří do sekcí:
+${secs.map(s => `- ${s}${hints[s] ? `: ${hints[s]}` : ''}`).join('\n')}
+
+Pravidla:
+- Každá sekce má 2 až 5 vět, nejvýš asi 90 slov. Uvnitř textu smíš použít markdown: \\n pro nový řádek, **tučně**, odrážky „- “ a citace „> “.
+- Fakta, která máš k dispozici, si ověř na webu. Nic si nevymýšlej. Co nevíš jistě, na kartě vynech a v textu to přiznej.
+- Karta: hodnoty piš česky a krátce. Délku piš jako „118 min“, u obsazení uveď nejvýš 5 jmen. Klíče znamenají: ${fields.map(f => `${f.k} = ${f.l}`).join(', ')}.
+- Do „film“ napiš název, rok a režii, ať je jasné, o které dílo jde. Do „poznamka“ napiš, jen když je název nejednoznačný nebo si něčím nejsi jistý, jinak tam nech prázdný řetězec.
+
+Odpověz jediným blokem kódu \`\`\`json a ničím jiným. JSON musí být platný (dvojité uvozovky, žádné komentáře) a mít přesně tuhle strukturu:
+\`\`\`json
+${JSON.stringify(ex, null, 2)}
+\`\`\``;
+}
+function parseBrief(text){
+  if (!text || !/"(sekce|karta)"\s*:/.test(text)) return null;
+  let s = text; const f = s.match(/```(?:json)?\s*([\s\S]*?)```/); if (f && f[1].includes('{')) s = f[1];
+  const a = s.indexOf('{'), b = s.lastIndexOf('}'); if (a<0 || b<a) return null;
+  let o; try{ o = JSON.parse(s.slice(a, b+1)); }catch{ return null; }
+  if (!o || !(o.sekce || o.karta)) return null;
+  // vzor z promptu má všude „…“ – ten se nenačítá
+  const vals = [...Object.values(o.sekce||{}), ...Object.values(o.karta||{})].map(x => String(x??'').trim());
+  return vals.some(x => x && x!=='…') ? o : null;
+}
+function applyBrief(o, d){
+  const p = P(d.preset); d.meta = d.meta||{};
+  const filled = [];
+  for (const f of p.fields||[]){
+    const v = o.karta && o.karta[f.k];
+    if (f.own || v==null || !String(v).trim() || String(v).trim()==='…' || d.meta[f.k]) continue;
+    d.meta[f.k] = String(v).trim(); filled.push(f.l);
+  }
+  const sections = {};
+  for (const [k,v] of Object.entries(o.sekce||{})) if (typeof v==='string' && v.trim() && v.trim()!=='…') sections[k] = v.trim();
+  const film = o.film && o.film!=='…' ? String(o.film) : '';
+  d.ai = { sections, film, note: o.poznamka ? String(o.poznamka) : '', at: Date.now() };
+  if (!d.title && film) d.title = film.replace(/\s*\(.*$|\s+[–—]\s.*$/, '').trim();
+  d.updated = Date.now(); d.rev = (d.rev||0) + 1; DB.put(d); GD.soon();
+  if (d===doc){ $('#title').value = d.title; briefActions = false; renderCard(); renderBrief(); renderNotes(); }
+  return { n:Object.keys(sections).length, filled };
+}
+function importBrief(text){
+  const o = parseBrief(text); if (!o) return false;
+  if (hasAi() && !confirm('Tenhle dokument už podklady má. Nahradit je novými?')) return true;
+  const r = applyBrief(o, doc);
+  toast(`Načteno ${r.n} sekcí${r.filled.length ? ` a ${r.filled.length} údajů na kartu` : ''}`);
+  return true;
+}
+async function generateBrief(){
+  if (briefBusy || !settings.apiKey) return;
+  if (!doc.title.trim()){ toast('Nejdřív napiš název.'); $('#title').focus(); return; }
+  const d = doc, p = P(d.preset), ctrl = new AbortController();
+  briefBusy = {ctrl, doc:d.id}; briefStatus = 'připravuje podklady…'; renderBrief();
+  const on = { text:() => { if (briefStatus!=='píše…'){ briefStatus='píše…'; if (doc===d) renderBrief(); } },
+    status:s => { briefStatus = s; if (doc===d) renderBrief(); }, sources:()=>{}, note:()=>{} };
+  try{
+    const res = await converse(p, [{role:'user', content:[{type:'text', text:briefPrompt(d)}]}], {web:!!p.web}, ctrl.signal, on);
+    const o = parseBrief(res.content.filter(b => b.type==='text').map(b => b.text).join(''));
+    if (res.stop==='refusal') toast('Model podklady odmítl připravit.');
+    else if (!o) toast('Odpověď nešla načíst. Zkus to znovu, nebo přes prompt.');
+    else { const r = applyBrief(o, d); toast(`Podklady hotové: ${r.n} sekcí`); }
+  }catch(e){
+    if (e.name!=='AbortError') toast(e.status===401 ? 'API klíč nefunguje.' : 'Podklady se nepovedly: '+e.message);
+  }finally{ briefBusy = null; briefStatus = ''; if (doc===d) renderBrief(); }
+}
+function maybeAutoBrief(){
+  if (!P(doc.preset).brief || !doc.title.trim() || hasAi() || doc.briefAsked) return;
+  doc.briefAsked = true; touch();
+  if (settings.apiKey) generateBrief();
+  else { const el = $('#brief'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+}
+
+function renderBrief(){
+  const p = P(doc.preset), el = $('#brief');
+  if (!p.brief){ el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  const head = `<span class="bl">${EYESVG}Pohled AI</span>`;
+  if (briefBusy && briefBusy.doc===doc.id){
+    el.innerHTML = `<div class="brow">${head}<span class="status">${esc(briefStatus)}</span><span class="sp"></span><button class="lnk" id="bStop">zastavit</button></div>`;
+    $('#bStop').onclick = () => briefBusy && briefBusy.ctrl.abort();
+    return;
+  }
+  const v = viewState();
+  if (hasAi() && !briefActions){
+    const secs = docHeadings().filter(aiSec);
+    const allOpen = secs.length && secs.every(h => v.open[norm(h)]);
+    const fmt = new Intl.DateTimeFormat('cs-CZ',{day:'numeric',month:'numeric'});
+    el.innerHTML = `<div class="brow">${head}<span class="bm">${esc(doc.ai.film ? doc.ai.film+' · ' : '')}${fmt.format(doc.ai.at)}</span><span class="sp"></span>
+      <div class="seg sm"><button id="bSide" class="${allOpen && !v.aiOnly ? 'on' : ''}">Vedle sebe</button><button id="bOnly" class="${v.aiOnly ? 'on' : ''}">Jen AI</button></div>
+      <button class="lnk" id="bMore">znovu…</button></div>
+      ${doc.ai.note ? `<div class="bnote">${esc(doc.ai.note)}</div>` : ''}`;
+    $('#bSide').onclick = () => toggleAllNotes();
+    $('#bOnly').onclick = () => { v.aiOnly = !v.aiOnly; touch(); renderBrief(); renderNotes(); };
+    $('#bMore').onclick = () => { briefActions = true; renderBrief(); };
+    return;
+  }
+  el.innerHTML = `<div class="brow">${head}<span class="bm">${hasAi() ? 'Nové podklady nahradí ty současné.' : 'Údaje na kartu a pohled na každou sekci.'}</span><span class="sp"></span>
+    <button class="btn sm" id="bCopy">Zkopírovat prompt</button><button class="btn sm" id="bPaste">Vložit odpověď</button>
+    ${settings.apiKey ? '<button class="btn sm pri" id="bGen">Vygenerovat</button>' : ''}
+    ${hasAi() ? '<button class="lnk" id="bDrop">zahodit</button><button class="lnk" id="bBack">zpět</button>' : ''}</div>
+    <div class="bhint" id="bHint">Prompt vlož do Clauda. Jeho odpověď, tedy blok s kódem, zkopíruj a vlož sem. Vložit ji můžeš i kamkoli v appce přes ⌘V.</div>
+    <textarea class="bpaste hidden" id="bPasteBox" rows="3" placeholder="Sem vlož odpověď z Clauda…" spellcheck="false"></textarea>`;
+  $('#bCopy').onclick = async () => {
+    if (!doc.title.trim()){ toast('Nejdřív napiš název.'); $('#title').focus(); return; }
+    const t = briefPrompt(doc);
+    try{ await navigator.clipboard.writeText(t); toast('Prompt je ve schránce. Vlož ho do Clauda.'); }
+    catch{ const b = $('#bPasteBox'); b.classList.remove('hidden'); b.value = t; b.select(); toast('Zkopíruj ho ručně přes ⌘C.'); }
+  };
+  $('#bPaste').onclick = () => { const b = $('#bPasteBox'); b.value=''; b.classList.remove('hidden'); b.focus(); };
+  $('#bPasteBox').oninput = e => {
+    const t = e.target.value.trim(); if (!t || t.startsWith(p.briefIntro||'\u0000')) return;
+    if (!importBrief(t)){ const h = $('#bHint'); h.textContent = 'Tohle se nepodařilo načíst. Zkopíruj celý blok s kódem, od { do }.'; h.classList.add('bad'); }
+  };
+  if ($('#bGen')) $('#bGen').onclick = generateBrief;
+  if ($('#bBack')) $('#bBack').onclick = () => { briefActions = false; renderBrief(); };
+  if ($('#bDrop')) $('#bDrop').onclick = () => { if (!confirm('Zahodit pohled AI u tohohle dokumentu?')) return; doc.ai = null; doc.view = {open:{}, aiOnly:false}; touch(); briefActions=false; renderBrief(); renderNotes(); };
+}
+const narrow = () => matchMedia('(max-width:760px)').matches;
+function openSheet(name){
+  if (!name) return;
+  $('#shT').textContent = `${P(doc.preset).agentName||'AI'} · ${name}`;
+  $('#shB').innerHTML = md(aiSec(name));
+  $('#shTake').onclick = () => { takeSection(name); closeSheet(); };
+  $('#sheet').classList.add('on'); $('#scrim').classList.add('on');
+}
+function closeSheet(){ $('#sheet').classList.remove('on'); if (!$('#drawer').classList.contains('on')) $('#scrim').classList.remove('on'); }
+$('#shX').onclick = closeSheet;
+function toggleAllNotes(){
+  if (!hasAi()) return;
+  const v = viewState(), secs = docHeadings().filter(aiSec);
+  if (narrow()){ v.aiOnly = !v.aiOnly; touch(); renderBrief(); renderNotes(); return; }   // na telefonu se vedle sebe nevejde
+  const on = !(secs.every(h => v.open[norm(h)]) && !v.aiOnly);
+  v.open = {}; if (on) secs.forEach(h => v.open[norm(h)] = true);
+  v.aiOnly = false; touch(); renderBrief(); renderNotes();
+}
+function renderNotes(){
+  const on = hasAi(), v = viewState(), col = $('.col'), notes = $('#notes'), aiv = $('#aiview');
+  const aiOnly = on && v.aiOnly;
+  $('#edrow').classList.toggle('hidden', aiOnly); aiv.classList.toggle('hidden', !aiOnly);
+  $('#eyeBtn').classList.toggle('hidden', !on);
+  $('#eyeBtn').classList.toggle('on', on && (aiOnly || Object.values(v.open).some(Boolean)));
+  const agent = esc(P(doc.preset).agentName || 'AI');
+  if (aiOnly){
+    const order = docHeadings().filter(aiSec);
+    const extra = Object.keys(doc.ai.sections).filter(k => !order.some(h => norm(h)===norm(k)));
+    aiv.innerHTML = [...order, ...extra].map(h => `<section><h2>${esc(h)}</h2><div class="m-a">${md(aiSec(h))}</div><button class="lnk" data-take="${esc(h)}">převzít do mých poznámek</button></section>`).join('');
+    aiv.querySelectorAll('[data-take]').forEach(b => b.onclick = () => takeSection(b.dataset.take));
+    col.classList.remove('split'); notes.innerHTML = '';
+    return;
+  }
+  const heads = on ? docHeadings().filter(h => v.open[norm(h)] && aiSec(h)) : [];
+  col.classList.toggle('split', heads.length > 0);
+  notes.innerHTML = heads.map(h => `<div class="note" data-k="${esc(norm(h))}"><div class="nh"><span>${agent}</span><span class="sp"></span>
+    <button class="lnk" data-take="${esc(h)}">převzít</button><button class="lnk" data-close="${esc(norm(h))}">skrýt</button></div><div class="m-a">${md(aiSec(h))}</div></div>`).join('');
+  notes.querySelectorAll('[data-take]').forEach(b => b.onclick = () => takeSection(b.dataset.take));
+  notes.querySelectorAll('[data-close]').forEach(b => b.onclick = () => { delete v.open[b.dataset.close]; touch(); renderBrief(); renderNotes(); });
+  render();
+}
+/* Volá ho render(): očička u nadpisů a poznámky srovnané na výšku jejich sekce (bez překryvu). */
+function layoutNotes(){
+  const eyes = $('#eyes'), notes = $('#notes'); if (!eyes || !doc) return;
+  const on = hasAi(), v = viewState();
+  const lh = parseFloat(getComputedStyle(mirror).lineHeight) || 34;
+  const tops = {}; let html = '';
+  mirror.querySelectorAll('[data-h]').forEach(el => {
+    const k = norm(el.dataset.h); if (k in tops) return;
+    tops[k] = el.offsetTop;
+    if (on && aiSec(el.dataset.h)) html += `<button class="eye ${v.open[k] ? 'on' : ''}" data-k="${esc(k)}" style="top:${el.offsetTop + (lh-28)/2}px" title="Co si o tom myslí ${esc(P(doc.preset).agentName||'AI')}">${EYESVG}</button>`;
+  });
+  eyes.innerHTML = html;
+  eyes.querySelectorAll('.eye').forEach(b => b.onmousedown = e => {
+    e.preventDefault(); const k = b.dataset.k;
+    if (narrow()){ openSheet(docHeadings().find(h => norm(h)===k)); return; }
+    if (v.open[k]) delete v.open[k]; else v.open[k] = true;
+    touch(); renderBrief(); renderNotes();
+  });
+  let y = 0;
+  notes.querySelectorAll('.note').forEach(n => { const t = Math.max(tops[n.dataset.k] ?? y, y); n.style.top = t+'px'; y = t + n.offsetHeight + 22; });
+  notes.style.height = y+'px';
+}
+function takeSection(name){
+  const text = aiSec(name).trim(); if (!text) return;
+  const v = ta.value, re = /^#{1,6}\s+(.+?)[ \t]*$/gm; let m, start = -1, end = v.length;
+  while ((m = re.exec(v))){
+    if (start<0){ if (norm(m[1])===norm(name)) start = m.index + m[0].length; }
+    else { end = m.index; break; }
+  }
+  let pos, ins;
+  if (start<0){ pos = v.length; ins = (v.endsWith('\n') ? '\n' : '\n\n') + `## ${name}\n${text}\n`; }
+  else { const body = v.slice(start, end).replace(/\s+$/, ''); pos = start + body.length; ins = (body.trim() ? '\n\n' : '\n') + text; }
+  if (viewState().aiOnly){ ta.value = v.slice(0,pos) + ins + v.slice(pos); doc.body = ta.value; touch(); render(); updateStat(); }
+  else { ta.focus(); ta.setSelectionRange(pos, pos); insertText(ins); }
+  toast(`Převzato do sekce ${name}`);
+}
+document.addEventListener('paste', e => {
+  const t = e.clipboardData && e.clipboardData.getData('text/plain');
+  if (!t || !doc || !P(doc.preset).brief || !parseBrief(t)) return;
+  e.preventDefault(); importBrief(t);
+});
+$('#eyeBtn').onclick = () => { const v = viewState(); if (v.aiOnly){ v.aiOnly = false; touch(); renderBrief(); renderNotes(); } else toggleAllNotes(); };
+
+/* ═══════════════ editor presetů ═══════════════ */
+let editing = null;
+const TYPE_IN = {datum:'date', 'hodnocení':'rating', 'ano/ne':'toggle'};
+const TYPE_OUT = {date:'datum', rating:'hodnocení', toggle:'ano/ne'};
+function fieldsToText(fs){ return fs.map(f => (f.key?'!':'')+f.l + (f.t?` [${TYPE_OUT[f.t]}]`:'') + (f.wide?' [široké]':'') + (f.own?' [moje]':'')).join('\n'); }
+function textToFields(t, old){
+  const slug = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'') || uid();
+  const used = new Set(), sec = [];
+  return t.split('\n').map(l=>l.trim()).filter(Boolean).map(l => {
+    const f = {}; if (l.startsWith('!')){ f.key=1; l=l.slice(1).trim(); }
+    l = l.replace(/\[([^\]]+)\]/g, (_,x) => { x=x.trim().toLowerCase(); if (TYPE_IN[x]) f.t=TYPE_IN[x]; else if (x==='široké') f.wide=1; else if (x==='moje') f.own=1; return ''; }).trim();
+    f.l = l; const prev = (old||[]).find(o=>o.l===l); let k = prev ? prev.k : slug(l); while (used.has(k)) k+='_'; used.add(k); f.k=k;
+    if (!f.key) f.sec = 1;
+    return f;
+  });
+}
+function openPresetEditor(id){
+  const p = id ? P(id) : { id:null, glyph:'✦', name:'', accent:'#8fa8c8', agentName:'', agentDesc:'', web:false, system:'', template:'', fields:[], actions:[] };
+  editing = p;
+  $('#preH').textContent = id ? `Preset · ${p.name}` : 'Nový preset';
+  $('#pName').value = p.glyph||''; $('#pTitle').value = p.name; $('#pColor').value = p.accent||'#d6a15c';
+  $('#pAgent').value = p.agentName||''; $('#pAgentDesc').value = p.agentDesc||'';
+  $('#pSystem').value = p.system||''; $('#pTemplate').value = p.template||'';
+  $('#pFields').value = fieldsToText(p.fields||[]);
+  $('#pActions').value = (p.actions||[]).map(a => a.fill ? 'Doplnit kartu' : `${a.l} :: ${a.p}`).join('\n');
+  $('#pWeb').checked = !!p.web;
+  $('#pDel').classList.toggle('hidden', !id || p.builtin);
+  $('#pReset').classList.toggle('hidden', !p.builtin || !custom.overrides[p.id]);
+  $('#pDup').classList.toggle('hidden', !id);
+  $('#preModal').classList.add('on'); setTimeout(()=>$('#pTitle').focus(),50);
+}
+function readPresetForm(){
+  const actions = $('#pActions').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l => {
+    if (/^doplnit kartu$/i.test(l)) return {l:'Doplnit kartu', fill:true};
+    const [a,...b] = l.split('::'); return {l:a.trim(), p:(b.join('::').trim() || a.trim())};
+  });
+  return { glyph:$('#pName').value.trim()||'✦', name:$('#pTitle').value.trim()||'Bez názvu', accent:$('#pColor').value,
+    agentName:$('#pAgent').value.trim()||'Asistent', agentDesc:$('#pAgentDesc').value.trim(), web:$('#pWeb').checked,
+    system:$('#pSystem').value, template:$('#pTemplate').value, fields:textToFields($('#pFields').value, editing.fields), actions };
+}
+$('#pSave').onclick = async () => {
+  const f = readPresetForm();
+  if (editing.builtin) custom.overrides[editing.id] = f;
+  else if (editing.id){ const i = custom.presets.findIndex(x=>x.id===editing.id); custom.presets[i] = {...custom.presets[i], ...f}; }
+  else { const np = {id:uid(), ...f}; custom.presets.push(np); settings.preset = np.id; saveSettings(); }
+  await saveCustom(); $('#preModal').classList.remove('on');
+  applyPreset(); if (doc.preset!==settings.preset) await switchPreset(settings.preset); else { renderCard(); renderChat(); renderKicker(); }
+};
+$('#pCancel').onclick = () => $('#preModal').classList.remove('on');
+$('#pReset').onclick = async () => { if (!confirm('Vrátit preset do výchozí podoby?')) return; delete custom.overrides[editing.id]; await saveCustom(); $('#preModal').classList.remove('on'); applyPreset(); renderCard(); };
+$('#pDup').onclick = () => { const f = readPresetForm(); editing = {id:null, ...f, name:f.name+' (kopie)'}; $('#pTitle').value = editing.name; $('#preH').textContent='Nový preset'; ['#pDel','#pReset','#pDup'].forEach(s=>$(s).classList.add('hidden')); };
+$('#pDel').onclick = async () => {
+  const n = docs.filter(d=>d.preset===editing.id).length;
+  if (!confirm(`Smazat preset „${editing.name}“?${n?` Jeho ${n} dokumentů zůstane, přesunou se pod ${BUILTIN[0].name}.`:''}`)) return;
+  for (const d of docs.filter(d=>d.preset===editing.id)){ d.preset = BUILTIN[0].id; await DB.put(d); }
+  custom.presets = custom.presets.filter(x=>x.id!==editing.id); await saveCustom();
+  $('#preModal').classList.remove('on'); settings.preset = BUILTIN[0].id; saveSettings(); applyPreset(); openDoc(doc.id);
+};
+
+/* ═══════════════ nastavení, export ═══════════════ */
+const THEMES = ['noc','uhel','papir'];
+function openSettings(){
+  $('#themeSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.t===settings.theme));
+  $('#effSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.e===settings.effort));
+  $('#fsRange').value = settings.fs; $('#fsVal').textContent = settings.fs+' px';
+  $('#setKey').value = settings.apiKey; $('#setModel').value = settings.model;
+  paintGd(); GD.setState(GD.state);
+  $('#setModal').classList.add('on');
+}
+$('#themeSeg').onclick = e => { const t=e.target.dataset.t; if (!t) return; settings.theme=t; saveSettings(); applyTheme(); openSettings(); };
+$('#effSeg').onclick = e => { const v=e.target.dataset.e; if (!v) return; settings.effort=v; saveSettings(); openSettings(); };
+$('#fsRange').oninput = e => { settings.fs=+e.target.value; $('#fsVal').textContent=settings.fs+' px'; applyTheme(); render(); };
+$('#fsRange').onchange = saveSettings;
+$('#setKey').onchange = e => { settings.apiKey = e.target.value.trim(); settings.noFallback=false; settings.noWeb=false; saveSettings(); renderAiHead(); };
+$('#setModel').onchange = e => { settings.model = e.target.value; settings.noFallback=false; saveSettings(); };
+$('#setClose').onclick = () => $('#setModal').classList.remove('on');
+$('#setBtn').onclick = openSettings;
+$('#themeBtn').onclick = () => { settings.theme = THEMES[(THEMES.indexOf(settings.theme)+1)%THEMES.length]; saveSettings(); applyTheme();
+  toast({noc:'Noc',uhel:'Uhel – teplá tma',papir:'Papír'}[settings.theme]); };
+$('#focusBtn').onclick = () => { settings.focus=!settings.focus; saveSettings(); applyTheme(); ta.focus(); render(); };
+$('#twBtn').onclick = () => { settings.tw=!settings.tw; saveSettings(); applyTheme(); ta.focus(); render(); keepCaret(true); };
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('mousedown', e => { if (e.target===m) m.classList.remove('on'); }));
+
+function download(name, text, type){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type})); a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+const fileName = s => (s||'bez-nazvu').replace(/[\/\\:*?"<>|]+/g,'-').trim().slice(0,80);
+$('#expMd').onclick = () => {
+  const p = P(doc.preset), m = doc.meta||{};
+  const fm = (p.fields||[]).filter(f=>m[f.k]!==''&&m[f.k]!=null).map(f=>`${f.l}: ${f.t==='rating'?m[f.k]+'/10':m[f.k]}`);
+  const ai = hasAi() ? `\n---\n\n## Pohled AI (${p.agentName||'AI'})\n\n` + Object.entries(doc.ai.sections).map(([k,v]) => `### ${k}\n${v}`).join('\n\n') + '\n' : '';
+  const text = `# ${doc.title||'Bez názvu'}\n\n${fm.length?fm.map(x=>'- '+x).join('\n')+'\n\n---\n\n':''}${doc.body.trim()}\n${ai}`;
+  download(fileName(doc.title)+'.md', text, 'text/markdown');
+};
+$('#expAll').onclick = () => download(`nokturno-zaloha-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify({v:1, custom, docs}, null, 1), 'application/json');
+$('#impAll').onclick = () => $('#impFile').click();
+$('#impFile').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try{
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data.docs)) throw new Error();
+    let n=0; for (const d of data.docs){ if (!docs.find(x=>x.id===d.id)){ docs.push(d); await DB.put(d); n++; } }
+    if (data.custom){ for (const p of data.custom.presets||[]) if (!custom.presets.find(x=>x.id===p.id)) custom.presets.push(p);
+      custom.overrides = {...data.custom.overrides, ...custom.overrides}; await saveCustom(); }
+    applyPreset(); renderDocList(); toast(`Obnoveno ${n} dokumentů. Existující zůstaly beze změny.`);
+  }catch{ toast('Tohle nevypadá jako záloha Nokturna.'); }
+  e.target.value='';
+};
+
+/* ═══════════════ celá obrazovka ═══════════════ */
+// v okně šipka nahoru s čárkou pod sebou (zasune prohlížeč), na celé obrazovce obráceně
+const FS_ON = '<svg viewBox="0 0 24 24"><path d="M12 16V5M7 10l5-5 5 5M5 20h14"/></svg>';
+const FS_OFF = '<svg viewBox="0 0 24 24"><path d="M12 8v11M7 14l5 5 5-5M5 4h14"/></svg>';
+const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+function toggleFullscreen(){
+  const d = document.documentElement;
+  const p = fsEl() ? (document.exitFullscreen || document.webkitExitFullscreen).call(document)
+                   : (d.requestFullscreen || d.webkitRequestFullscreen).call(d);
+  if (p && p.catch) p.catch(() => toast('Tenhle prohlížeč celou obrazovku nepovolil.'));
+}
+function paintFs(){
+  const on = !!fsEl(); const b = $('#fsBtn');
+  b.innerHTML = on ? FS_OFF : FS_ON; b.classList.toggle('on', on);
+  b.title = on ? 'Zpátky do okna (Esc)' : 'Na celou obrazovku (⌘⇧↵)';
+}
+$('#fsBtn').onclick = toggleFullscreen;
+document.addEventListener('fullscreenchange', paintFs);
+document.addEventListener('webkitfullscreenchange', paintFs);
+paintFs();
+
+/* ═══════════════ ovládání ═══════════════ */
+$('#docsBtn').onclick = openDrawer;
+$('#scrim').onclick = () => { closeDrawer(); closeSheet(); };
+$('#newDoc').onclick = async () => { closeDrawer(); await newDoc(); };
+$('#dsearch').oninput = renderDocList;
+$('#fPreset').onclick = () => { settings.listAll=false; saveSettings(); renderDocList(); };
+$('#fAll').onclick = () => { settings.listAll=true; saveSettings(); renderDocList(); };
+document.addEventListener('keydown', e => {
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key.toLowerCase()==='j'){ e.preventDefault(); openAi(); }
+  else if (mod && e.key.toLowerCase()==='o'){ e.preventDefault(); $('#drawer').classList.contains('on') ? closeDrawer() : openDrawer(); }
+  else if (mod && e.shiftKey && e.key.toLowerCase()==='f'){ e.preventDefault(); $('#focusBtn').click(); }
+  else if (mod && e.key.toLowerCase()==='e'){ e.preventDefault(); $('#eyeBtn').click(); }
+  else if (mod && e.shiftKey && e.key==='Enter'){ e.preventDefault(); toggleFullscreen(); }
+  else if (mod && e.key.toLowerCase()==='s'){ e.preventDefault(); clearTimeout(saveT); DB.put(doc).then(()=>{ $('#saved').classList.remove('dirty'); toast('Uloženo'); }); }
+  else if (e.key==='Escape'){
+    if (busy){ busy.abort(); return; }
+    if (briefBusy){ briefBusy.ctrl.abort(); return; }
+    if (document.querySelector('.modal.on')){ document.querySelectorAll('.modal.on').forEach(m=>m.classList.remove('on')); return; }
+    if ($('#drawer').classList.contains('on')){ closeDrawer(); return; }
+    if ($('#sheet').classList.contains('on')){ closeSheet(); return; }
+  }
+});
+window.addEventListener('resize', () => render());
+
+/* ═══════════════ Google Disk ═══════════════
+   Každý dokument je jeden soubor <název>.nokturno.json ve složce Nokturno, vlastní presety jsou
+   v nokturno-presety.json. V appProperties souboru je id dokumentu (nid) a jeho čas změny (upd).
+   doc.drive = {id, upd} si pamatuje stav při poslední synchronizaci: když se od té doby změnily
+   obě strany, vyhraje Disk a místní verze zůstane jako kopie. Přihlášení je OAuth redirect
+   (response_type=token), takže to funguje bez knihovny i v appce připnuté na ploše iPhonu. */
+const DRIVE_CLIENT_ID = '56680738824-ji9a7t0tp5ffujv2lbj3d64mtb3ulsib.apps.googleusercontent.com';
+const GD = {
+  token:null, exp:0, folder:null, busy:false, again:false, state:'off', soonT:null,
+  clientId(){ return (settings.driveClientId || DRIVE_CLIENT_ID).trim(); },
+  valid(){ return !!this.token && Date.now() < this.exp - 60000; },
+  setState(s, msg){
+    this.state = s; const b = $('#cloudBtn');
+    b.classList.toggle('hidden', !settings.driveOn); b.dataset.s = s;
+    const last = settings.driveLast ? new Intl.DateTimeFormat('cs-CZ',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'}).format(settings.driveLast) : 'zatím ne';
+    b.title = { ok:`Google Disk · synchronizováno ${last}`, sync:'Google Disk · synchronizuji…', login:'Google Disk · klikni pro přihlášení',
+      err:'Google Disk · chyba: '+(msg||''), offline:'Google Disk · jsi offline, synchronizuji později', off:'' }[s] || '';
+    const l = $('#gdLine'); if (l && settings.driveOn) l.textContent = b.title + '. API klíč k AI se nesynchronizuje.';
+  },
+  async login(){
+    if (!this.clientId()){ toast('Chybí Client ID z Google Cloud.'); openSettings(); return; }
+    await flushSave();
+    const st = uid(); localStorage.setItem('nk_gd_state', st); localStorage.setItem('nk_gd_try', Date.now());
+    const q = new URLSearchParams({ client_id:this.clientId(), redirect_uri:location.origin+location.pathname, response_type:'token',
+      scope:'https://www.googleapis.com/auth/drive.file', include_granted_scopes:'true', state:st });
+    location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + q;
+  },
+  // návrat z přihlášení: token je v #hash adresy
+  async fromRedirect(){
+    if (!location.hash.includes('access_token=') && !location.hash.includes('error=')) return;
+    const h = new URLSearchParams(location.hash.slice(1));
+    history.replaceState(null, '', location.pathname + location.search);
+    if (h.get('error')){ toast('Přihlášení ke Google Disku se nepovedlo: '+h.get('error')); return; }
+    if (h.get('state') !== localStorage.getItem('nk_gd_state')){ toast('Přihlášení nesedí, zkus to znovu.'); return; }
+    this.token = h.get('access_token'); this.exp = Date.now() + (+h.get('expires_in')||3600)*1000;
+    await DB.set('gtoken', {t:this.token, exp:this.exp});
+    if (!settings.driveOn){ settings.driveOn = true; saveSettings(); toast('Google Disk připojený.'); }
+  },
+  async restore(){ const t = await DB.get('gtoken'); if (t){ this.token = t.t; this.exp = t.exp; } },
+  async api(path, opt={}, upload=false){
+    const r = await fetch((upload ? 'https://www.googleapis.com/upload/drive/v3/' : 'https://www.googleapis.com/drive/v3/') + path,
+      {...opt, headers:{...(opt.headers||{}), Authorization:'Bearer '+this.token}});
+    if (r.status===401){ this.token = null; await DB.set('gtoken', null); throw new Error('login'); }
+    if (!r.ok) throw new Error(`Disk ${r.status}: ${(await r.text()).slice(0,160)}`);
+    return r;
+  },
+  async ensureFolder(){
+    if (this.folder) return;
+    const q = encodeURIComponent("mimeType='application/vnd.google-apps.folder' and name='Nokturno' and trashed=false");
+    const r = await (await this.api(`files?q=${q}&fields=files(id)&orderBy=createdTime`)).json();
+    if (r.files.length){ this.folder = r.files[0].id; return; }
+    const c = await (await this.api('files?fields=id', {method:'POST', headers:{'content-type':'application/json'},
+      body:JSON.stringify({name:'Nokturno', mimeType:'application/vnd.google-apps.folder'})})).json();
+    this.folder = c.id;
+  },
+  async list(){
+    const q = encodeURIComponent(`'${this.folder}' in parents and trashed=false`);
+    const out = []; let pt = '';
+    do{
+      const r = await (await this.api(`files?q=${q}&pageSize=1000&fields=nextPageToken,files(id,appProperties)${pt ? '&pageToken='+pt : ''}`)).json();
+      out.push(...r.files); pt = r.nextPageToken || '';
+    } while (pt);
+    return out;
+  },
+  async put(fileId, name, props, obj){
+    const b = 'nokturno' + uid();
+    const meta = fileId ? {name, appProperties:props} : {name, appProperties:props, parents:[this.folder], mimeType:'application/json'};
+    const body = `--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(obj)}\r\n--${b}--`;
+    const r = await this.api(`files${fileId ? '/'+fileId : ''}?uploadType=multipart&fields=id`,
+      {method: fileId ? 'PATCH' : 'POST', headers:{'content-type':'multipart/related; boundary='+b}, body}, true);
+    return (await r.json()).id;
+  },
+  async get(id){ return (await this.api(`files/${id}?alt=media`)).json(); },
+  async trash(id){ await this.api(`files/${id}`, {method:'PATCH', headers:{'content-type':'application/json'}, body:JSON.stringify({trashed:true})}); },
+  soon(){ if (!settings.driveOn) return; clearTimeout(this.soonT); this.soonT = setTimeout(() => this.sync(), 6000); },
+
+  async sync(){
+    if (!settings.driveOn) return;
+    if (this.busy){ this.again = true; return; }
+    if (!this.valid()){ this.setState('login'); return; }
+    if (!navigator.onLine){ this.setState('offline'); return; }
+    this.busy = true; this.setState('sync');
+    const strip = d => { const o = {...d}; delete o.drive; return o; };
+    const fname = d => (d.title || 'Bez názvu').replace(/[\/\\]+/g, '-').slice(0, 80) + '.nokturno.json';
+    const props = d => ({kind:'doc', nid:d.id, upd:String(d.updated), preset:d.preset});
+    const pristine = d => !d.title && (d.body||'') === (P(d.preset).template||'') && !(d.chat && d.chat.view.length) && !d.ai;
+    let reopen = false;
+    try{
+      await flushSave();
+      await this.ensureFolder();
+      const files = await this.list();
+      const byId = {}; let presetFile = null;
+      for (const f of files){ const a = f.appProperties||{}; if (a.kind==='presets') presetFile = f; else if (a.nid) byId[a.nid] = f; }
+
+      for (const id of (await DB.get('deleted')) || []) if (byId[id]){ await this.trash(byId[id].id); delete byId[id]; }
+      await DB.set('deleted', []);
+
+      // Změna místně = jiné doc.rev než při poslední synchronizaci, změna na Disku = jiné upd.
+      // Časy se mezi zařízeními neporovnávají, hodiny telefonu a Macu se můžou rozcházet.
+      const upload = async (d, fid) => {
+        const base = d.drive ? d.drive.upd : 0;
+        if (d.updated <= base) d.updated = base + 1;
+        const id = await this.put(fid, fname(d), props(d), strip(d));
+        d.drive = {id, upd:d.updated, rev:d.rev||0}; await DB.put(d);
+      };
+      const download = async (d, f, ru) => {
+        const r = await this.get(f.id);
+        for (const k of Object.keys(d)) delete d[k];
+        Object.assign(d, r, {updated:ru}); d.drive = {id:f.id, upd:ru, rev:d.rev||0}; await DB.put(d);
+        if (doc===d) reopen = true;
+      };
+      for (const d of docs.slice()){
+        const f = byId[d.id]; delete byId[d.id];
+        const localChanged = !d.drive || (d.rev||0) !== d.drive.rev;
+        if (!f){
+          if (d.drive && !localChanged){ docs = docs.filter(x => x!==d); await DB.del(d.id); if (doc===d) reopen = true; continue; }  // smazaný jinde
+          if (!pristine(d)) await upload(d, null);
+          continue;
+        }
+        const ru = +(f.appProperties.upd) || 0;
+        if (!d.drive){ ru > d.updated ? await download(d, f, ru) : await upload(d, f.id); continue; }   // první spárování
+        const remoteChanged = ru !== d.drive.upd;
+        if (localChanged && remoteChanged){
+          const copy = {...strip(clone(d)), id:uid(), title:(d.title||'Bez názvu')+' (kopie z tohoto zařízení)', updated:Date.now()};
+          docs.push(copy); await upload(copy, null);
+          toast(`„${d.title||'Bez názvu'}“ se změnil i jinde. Tvoje verze je uložená jako kopie.`);
+          await download(d, f, ru);
+        }
+        else if (localChanged) await upload(d, f.id);
+        else if (remoteChanged) await download(d, f, ru);
+      }
+      for (const f of Object.values(byId)){          // nové z jiného zařízení
+        const ru = +(f.appProperties.upd) || 0, d = {id:f.appProperties.nid};
+        docs.push(d); await download(d, f, ru);
+      }
+
+      // presety: změna na Disku vyhrává, jinak se nahraje místní
+      const pf = presetFile, pru = pf ? +(pf.appProperties.upd)||0 : 0;
+      const pLocal = (custom.rev||0) && (!custom.drive || custom.rev !== custom.drive.rev);
+      const pRemote = pf && (!custom.drive ? (!pLocal || pru > (custom.updated||0)) : pru !== custom.drive.upd);
+      if (pRemote){
+        const r = await this.get(pf.id);
+        custom = Object.assign({overrides:{}, presets:[]}, r, {updated:pru}); custom.drive = {id:pf.id, upd:pru, rev:custom.rev||0};
+        await DB.set('custom', custom); applyPreset();
+      } else if (pLocal){
+        if ((custom.updated||0) <= pru) custom.updated = pru + 1;
+        const id = await this.put(pf ? pf.id : null, 'nokturno-presety.json', {kind:'presets', upd:String(custom.updated)}, strip(custom));
+        custom.drive = {id, upd:custom.updated, rev:custom.rev}; await DB.set('custom', custom);
+      }
+
+      settings.driveLast = Date.now(); saveSettings();
+      this.setState('ok');
+    }catch(e){
+      if (e.message==='login') this.setState('login');
+      else { this.setState('err', e.message); console.warn('Google Disk:', e); }
+    }finally{
+      this.busy = false;
+      if (reopen){
+        const cur = doc && docs.includes(doc) ? doc : null, st = main.scrollTop, a = ta.selectionStart, b = ta.selectionEnd;
+        if (cur){ openDoc(cur.id); main.scrollTop = st; ta.setSelectionRange(Math.min(a, ta.value.length), Math.min(b, ta.value.length)); render(); }
+        else { const nx = docs.filter(x=>x.preset===settings.preset).sort((x,y)=>y.updated-x.updated)[0]; nx ? openDoc(nx.id) : newDoc(); }
+      }
+      renderDocList();
+      if (this.again){ this.again = false; this.soon(); }
+    }
+  },
+  // po startu nebo návratu do appky s prošlým tokenem rovnou přihlásit (ale ne do kola)
+  autoLogin(){
+    if (!settings.driveOn || this.valid() || !navigator.onLine || saveT) return false;
+    if (Date.now() - (+localStorage.getItem('nk_gd_try')||0) < 5*60*1000) return false;
+    this.login(); return true;
+  },
+  disconnect(){
+    if (this.token) fetch('https://oauth2.googleapis.com/revoke?token='+encodeURIComponent(this.token), {method:'POST'}).catch(()=>{});
+    this.token = null; this.folder = null; settings.driveOn = false; saveSettings(); DB.set('gtoken', null);
+    this.setState('off'); toast('Google Disk odpojený. Dokumenty zůstaly tady i na Disku.');
+  }
+};
+$('#cloudBtn').onclick = () => GD.valid() ? GD.sync() : GD.login();
+$('#gdBtn').onclick = () => { if (settings.driveOn) GD.disconnect(); else { settings.driveClientId = $('#setClient').value.trim(); saveSettings(); GD.login(); } paintGd(); };
+function paintGd(){
+  $('#gdBtn').textContent = settings.driveOn ? 'Odpojit' : 'Připojit';
+  $('#setClient').value = settings.driveClientId || DRIVE_CLIENT_ID;
+  $('#setClient').closest('.inline').querySelector('input').classList.toggle('hidden', !!DRIVE_CLIENT_ID);
+}
+document.addEventListener('visibilitychange', () => {
+  if (!settings.driveOn) return;
+  if (document.visibilityState==='visible'){ if (!GD.autoLogin()) GD.sync(); }
+  else GD.sync();
+});
+window.addEventListener('online', () => GD.sync());
+setInterval(() => { if (settings.driveOn && document.visibilityState==='visible') GD.sync(); }, 90000);
+
+/* ═══════════════ start ═══════════════ */
+(async function init(){
+  try{ await DB.open(); }catch(e){ document.body.innerHTML = '<p style="padding:40px;font-family:sans-serif">Prohlížeč nepovolil úložiště (IndexedDB). Otevři Nokturno přes nokturno.command.</p>'; return; }
+  Object.assign(settings, await DB.get('settings') || {});
+  custom = Object.assign({overrides:{}, presets:[]}, await DB.get('custom') || {});
+  docs = await DB.all();
+  if (!presets().some(p=>p.id===settings.preset)) settings.preset = BUILTIN[0].id;
+  applyTheme(); applyPreset();
+  const last = docs.find(d=>d.id===settings.lastDoc) || docs.filter(d=>d.preset===settings.preset).sort((a,b)=>b.updated-a.updated)[0];
+  if (last) openDoc(last.id); else await newDoc();
+  if (settings.aiOpen && !narrow()){ $('#ai').classList.add('on'); $('#aiBtn').classList.add('on'); }
+  if (document.fonts) document.fonts.ready.then(render);
+  if (!document.fullscreenEnabled && !document.webkitFullscreenEnabled) $('#fsBtn').classList.add('hidden');
+  await GD.restore(); await GD.fromRedirect();
+  if (settings.driveOn){ GD.setState('ok'); if (!GD.autoLogin()) GD.sync(); }
+  if ('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+})();
+</script>
+</body>
+</html>
