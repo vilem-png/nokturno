@@ -404,8 +404,7 @@ textarea.inp.mono{font-family:var(--mono);font-size:11.5px}
         </div>
       </div>
       <div class="keycard hidden" id="keycard">
-        <b>Konzultace potřebují API klíč Anthropic.</b><br>
-        Najdeš ho na console.anthropic.com v části API Keys. Klíč zůstává jen v tomhle prohlížeči a posílá se přímo na api.anthropic.com.
+        <div id="keyText"></div>
         <input id="keyInput" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
         <button class="btn pri" id="keySave">Uložit klíč</button>
       </div>
@@ -450,6 +449,10 @@ textarea.inp.mono{font-family:var(--mono);font-size:11.5px}
   <div class="row"><label>Motiv</label><div class="seg" id="themeSeg">
     <button data-t="noc">Noc</button><button data-t="uhel">Uhel</button><button data-t="papir">Papír</button></div></div>
   <div class="row"><label>Velikost písma</label><div class="inline"><input type="range" id="fsRange" min="15" max="26" step="1" style="flex:1;accent-color:var(--acc)"><span id="fsVal" class="stat"></span></div></div>
+  <div class="row"><label>AI</label><div><div class="seg" id="provSeg">
+    <button data-p="cloud">Cloud (Claude)</button><button data-p="local">Lokální (OpenAI-kompatibilní)</button></div>
+    <div class="hint">Nastavení platí jen pro tohle zařízení, mezi zařízeními se nesynchronizuje.</div></div></div>
+  <div id="cloudRows">
   <div class="row"><label>API klíč</label><div><input class="inp" id="setKey" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false" style="font-family:var(--mono);font-size:12px">
     <div class="hint">Posílá se přímo na api.anthropic.com, nikam jinam.</div></div></div>
   <div class="row"><label>Model</label><div><select class="inp" id="setModel">
@@ -460,6 +463,16 @@ textarea.inp.mono{font-family:var(--mono);font-size:11.5px}
   <div class="row"><label>Hloubka přemýšlení</label><div><div class="seg" id="effSeg">
     <button data-e="low">Rychle</button><button data-e="medium">Vyváženě</button><button data-e="high">Důkladně</button></div>
     <div class="hint">Důkladně se hodí na rozbory, rychle na drobné dotazy.</div></div></div>
+  </div>
+  <div id="localRows" class="hidden">
+  <div class="row"><label>Base URL</label><div><input class="inp" id="locUrl" placeholder="http://127.0.0.1:11435/v1" autocomplete="off" spellcheck="false" style="font-family:var(--mono);font-size:12px"></div></div>
+  <div class="row"><label>API klíč</label><div><input class="inp" id="locKey" type="password" placeholder="klíč lokálního serveru" autocomplete="off" spellcheck="false" style="font-family:var(--mono);font-size:12px">
+    <div class="hint">Posílá se jen na adresu nahoře, jako hlavička Authorization: Bearer.</div></div></div>
+  <div class="row"><label>Model</label><div><input class="inp" id="locModel" placeholder="qwen3.8:27b" autocomplete="off" spellcheck="false" style="font-family:var(--mono);font-size:12px"></div></div>
+  <div class="row"><label>Kontext</label><div class="inline"><input class="inp" id="locCtx" type="number" min="1024" step="512" style="width:110px"><span class="hint" style="margin:0">tokenů. Dokument se zkrátí, aby se vešel.</span></div></div>
+  <div class="row"><label>Přemýšlení</label><label style="padding-top:8px;display:flex;gap:6px;align-items:center;color:var(--ink2);font-size:12.5px"><input type="checkbox" id="locThink"> nechat model přemýšlet (pomalejší a ubírá kontext)</label></div>
+  <div class="row"><label></label><div><button class="btn" id="locTest">Otestovat spojení</button><div class="gdline" id="locInfo"></div></div></div>
+  </div>
   <div class="row"><label>Google Disk</label><div>
     <div class="inline"><input class="inp" id="setClient" placeholder="Client ID z Google Cloud (….apps.googleusercontent.com)" autocomplete="off" spellcheck="false" style="font-family:var(--mono);font-size:11.5px">
       <button class="btn" id="gdBtn">Připojit</button></div>
@@ -713,7 +726,8 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 const clone = o => JSON.parse(JSON.stringify(o));
 
 let settings = { theme:'noc', fs:19, focus:false, tw:false, apiKey:'', model:'claude-opus-5-5', effort:'medium',
-  preset:'film', aiOpen:false, cardOpen:false, listAll:false, noFallback:false, noWeb:false };
+  preset:'film', aiOpen:false, cardOpen:false, listAll:false, noFallback:false, noWeb:false,
+  provider:'cloud', localUrl:'http://127.0.0.1:11435/v1', localKey:'', localModel:'qwen3.8:27b', localCtx:4096, localThink:false };
 let custom = { overrides:{}, presets:[] };    // úpravy vestavěných + vlastní presety
 let docs = [];
 let doc = null;
@@ -1061,8 +1075,115 @@ async function streamOnce(req, signal, on){
   }
   return { content: blocks.filter(Boolean), stop, stopDetails };
 }
+/* ═══════════════ AI: lokální model (OpenAI Chat Completions) ═══════════════
+   Historie se ukládá ve formátu Anthropic Messages, pro lokální server se převádí na prostý text.
+   Kontext bývá malý (4096 tokenů): starší přiložené dokumenty se z historie vyhodí, nejstarší
+   výměny se zahodí a aktuální dokument se zkrátí tak, aby zbylo místo na odpověď. */
+const LOCAL_DEF = { url:'http://127.0.0.1:11435/v1', model:'qwen3.8:27b', ctx:4096 };
+const isLocal = () => settings.provider === 'local';
+const aiReady = () => isLocal() ? !!(settings.localUrl||'').trim() : !!settings.apiKey;
+const tok = s => Math.ceil((s||'').length / 2.2);          // čeština má u Qwenu zhruba 2,2 až 3 znaky na token, počítáme opatrně
+const stripThink = s => s.replace(/<think>[\s\S]*?(?:<\/think>\s*|$)/g, '');
+const localFetchHint = () => `Lokální server na ${settings.localUrl} neodpovídá. Běží? Chrome se může zeptat na přístup k zařízením v místní síti, ten je potřeba povolit.`;
+
+function compactDoc(block, maxChars){
+  if (block.length <= maxChars) return block;
+  const m = block.match(/<text>\n([\s\S]*?)\n<\/text>/);
+  if (!m) return block.slice(0, Math.max(0, maxChars));
+  const head = block.slice(0, m.index), tail = block.slice(m.index + m[0].length);
+  const room = Math.max(300, maxChars - head.length - tail.length - 80);
+  // sekce, ve kterých je jen nadpis nebo vzor ze šablony, nic nenesou
+  const secs = m[1].split(/(?=^#{1,6}\s)/m).map(s => s.trim())
+    .filter(s => s.replace(/^#{1,6}\s.*$/m, '').replace(/[-–>\s0:]/g, '').length);
+  let body = secs.join('\n\n');
+  if (body.length > room){                              // každé sekci férový díl, krátké pustí zbytek dlouhým
+    const lens = secs.map(s => s.length), cap = []; let left = room, n = secs.length;
+    for (const i of [...lens.keys()].sort((a,b) => lens[a]-lens[b])){ cap[i] = Math.min(lens[i], Math.floor(left/n)); left -= cap[i]; n--; }
+    body = secs.map((s,i) => s.length > cap[i] ? s.slice(0, Math.max(30, cap[i]-1)) + '…' : s).join('\n\n');
+  }
+  return `${head}<text>\n${body}\n(text je zkrácený, aby se vešel do kontextu modelu)\n</text>${tail}`;
+}
+function localMessages(p, messages){
+  const ctx = +settings.localCtx || LOCAL_DEF.ctx;
+  const reserve = Math.min(settings.localThink ? 1600 : 1000, Math.floor(ctx * 0.4));
+  const budget = ctx - reserve - 60;
+  const system = (p.system||'') + COMMON_SYSTEM;
+  const plain = m => typeof m.content === 'string' ? m.content : (m.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n\n');
+  let hist = messages.map(m => ({role:m.role, content:plain(m)})).filter(m => m.content.trim());
+  hist = hist.map((m,i) => i < hist.length-1
+    ? {...m, content:m.content.replace(/<dokument[\s\S]*?<\/dokument>/g, '(dokument)').replace(/<výběr>[\s\S]*?<\/výběr>/g, '(výběr)')} : m);
+  const used = () => tok(system) + hist.reduce((s,m) => s + tok(m.content) + 4, 0);
+  const last = hist[hist.length-1];
+  const shrinkDoc = maxTok => {
+    const dm = last.content.match(/<dokument[\s\S]*?<\/dokument>/);
+    if (dm && tok(dm[0]) > maxTok) last.content = last.content.replace(dm[0], compactDoc(dm[0], Math.max(400, Math.floor(maxTok * 2.2))));
+  };
+  // dokument smí zabrat nejvýš polovinu místa, pak se zahazují nejstarší výměny, a teprve potom se krátí dál
+  if (used() > budget) shrinkDoc(Math.floor((budget - tok(system)) / 2));
+  while (used() > budget && hist.length > 1) hist.splice(0, hist[0].role==='user' && hist.length > 2 ? 2 : 1);
+  if (used() > budget){ const dm = last.content.match(/<dokument[\s\S]*?<\/dokument>/); if (dm) shrinkDoc(tok(dm[0]) - (used() - budget)); }
+  if (!settings.localThink) hist[hist.length-1].content += '\n\n/no_think';   // Qwen: vypne přemýšlení
+  return { msgs:[{role:'system', content:system}, ...hist], maxTokens: Math.max(256, ctx - used() - 20), trimmed: used() > budget };
+}
+async function converseLocal(p, messages, signal, on){
+  const {msgs, maxTokens} = localMessages(p, messages);
+  const headers = {'content-type':'application/json'};
+  if (settings.localKey) headers.Authorization = 'Bearer ' + settings.localKey;
+  let res;
+  try{
+    res = await fetch(settings.localUrl.replace(/\/+$/,'') + '/chat/completions', {method:'POST', headers, signal,
+      body:JSON.stringify({model:settings.localModel || LOCAL_DEF.model, messages:msgs, stream:true, max_tokens:maxTokens})});
+  }catch(e){ if (e.name==='AbortError') throw e; const er = new Error(localFetchHint()); er.local = true; throw er; }
+  if (!res.ok){
+    const t = await res.text(); let msg = t; try{ const j = JSON.parse(t); msg = (j.error && (j.error.message||j.error)) || j.message || t; }catch{}
+    const er = new Error(String(msg).slice(0,300)); er.status = res.status; throw er;
+  }
+  let raw = '', shown = 0, finish = null;
+  const emit = final => {
+    let vis = stripThink(raw);
+    if (!final){ const k = vis.lastIndexOf('<'); if (k >= 0 && '<think>'.startsWith(vis.slice(k))) vis = vis.slice(0, k); }  // napůl přišlá značka
+    if (vis.length > shown){ on.text(vis.slice(shown)); shown = vis.length; }
+  };
+  if (!(res.headers.get('content-type')||'').includes('event-stream')){       // server, který stream ignoruje
+    const j = await res.json(); raw = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
+    finish = j.choices && j.choices[0] && j.choices[0].finish_reason; emit(true);
+  } else {
+    const reader = res.body.getReader(), dec = new TextDecoder(); let buf = '';
+    for(;;){
+      const {value, done} = await reader.read(); if (done) break;
+      buf += dec.decode(value, {stream:true});
+      let i;
+      while ((i = buf.indexOf('\n')) >= 0){
+        const line = buf.slice(0, i).trim(); buf = buf.slice(i+1);
+        if (!line.startsWith('data:')) continue;
+        const data = line.slice(5).trim(); if (data === '[DONE]') continue;
+        let j; try{ j = JSON.parse(data); }catch{ continue; }
+        const c = j.choices && j.choices[0]; if (!c) continue;
+        const dl = c.delta || {};
+        if (dl.reasoning_content || dl.reasoning) on.status('přemýšlí…');
+        if (dl.content){ raw += dl.content; if (/<think>(?![\s\S]*<\/think>)/.test(raw)) on.status('přemýšlí…'); emit(false); }
+        if (c.finish_reason) finish = c.finish_reason;
+      }
+    }
+    emit(true);
+  }
+  return { content:[{type:'text', text:stripThink(raw).trim()}], stop: finish==='length' ? 'max_tokens' : 'end_turn' };
+}
+function aiError(e){
+  if (isLocal()){
+    if (e.local) return e.message;
+    if (e.status===401 || e.status===403) return 'Lokální server odmítl klíč. Zkontroluj ho v Nastavení → AI.';
+    if (e.status===404) return `Lokální server nezná model „${settings.localModel}“ nebo adresu ${settings.localUrl}. Zkontroluj Nastavení → AI.`;
+    return 'Chyba lokálního modelu: ' + e.message;
+  }
+  return e.status===401 ? 'API klíč nefunguje. Zkontroluj ho v Nastavení.' :
+    e.status===429 ? 'Moc dotazů najednou. Chvíli počkej.' :
+    e.message==='Failed to fetch' ? 'Nepodařilo se spojit s api.anthropic.com. Jsi online?' : ('Chyba: '+e.message);
+}
+
 /* Pošle konverzaci a dotáhne případné pause_turn. Na 400 kvůli fallbacku nebo webu to zkusí jednou bez nich. */
 async function converse(p, messages, opts, signal, on){
+  if (isLocal()) return converseLocal(p, messages, signal, on);
   let tries = 0;
   for(;;){
     try{
@@ -1108,17 +1229,22 @@ function renderAiHead(){
   $('#aiDesc').textContent = p.agentDesc || '';
   $('#aiMark').textContent = p.glyph || '✦';
   $('#q').placeholder = p.ask || 'Zeptej se…';
-  $('#useWeb').checked = !!p.web && !settings.noWeb;
+  $('#useWeb').checked = !!p.web && !settings.noWeb && !isLocal();
+  $('#webWrap').classList.toggle('hidden', isLocal());      // lokální model web nemá
   $('#chips').innerHTML = (p.actions||[]).map((a,i) => `<button class="chip" data-i="${i}">${esc(a.l)}</button>`).join('');
   $('#chips').querySelectorAll('.chip').forEach(c => c.onclick = () => runAction(P(settings.preset).actions[+c.dataset.i]));
-  const noKey = !settings.apiKey;
+  const noKey = !aiReady();
   $('#keycard').classList.toggle('hidden', !noKey);
+  $('#keyText').innerHTML = isLocal()
+    ? '<b>Lokální model ještě není nastavený.</b><br>Doplň adresu serveru v Nastavení → AI.'
+    : '<b>Konzultace potřebují API klíč Anthropic.</b><br>Najdeš ho na console.anthropic.com v části API Keys. Klíč zůstává jen v tomhle prohlížeči a posílá se přímo na api.anthropic.com.';
+  $('#keyInput').classList.toggle('hidden', isLocal()); $('#keySave').classList.toggle('hidden', isLocal());
   ['#chips','#msgs','#compose'].forEach(s => $(s).classList.toggle('hidden', noKey));
 }
 function openAi(on){
   settings.aiOpen = on ?? !settings.aiOpen; saveSettings();
   $('#ai').classList.toggle('on', settings.aiOpen); $('#aiBtn').classList.toggle('on', settings.aiOpen);
-  if (settings.aiOpen){ renderAiHead(); setTimeout(()=> settings.apiKey ? $('#q').focus() : $('#keyInput').focus(), 200); }
+  if (settings.aiOpen){ renderAiHead(); setTimeout(()=> aiReady() ? $('#q').focus() : (!isLocal() && $('#keyInput').focus()), 200); }
 }
 function md(src){
   const lines = src.replace(/\r/g,'').split('\n'); let out='', list=null, para=[], quote=[], code=null;
@@ -1186,12 +1312,13 @@ ta.addEventListener('blur', () => { lastCaret = ta.selectionEnd; });
 
 async function send(text, action){
   if (busy) return;
-  if (!settings.apiKey){ openAi(true); return; }
+  if (!aiReady()){ openAi(true); return; }
   const d = doc, p = P(d.preset);
   const parts = [];
   if ($('#sendDoc').checked){
     const snap = docSnapshot();
-    parts.push({type:'text', text: snap===d.lastSent ? '(Dokument se od poslední zprávy nezměnil.)' : snap});
+    // lokální model dostává dokument vždycky znovu, starší kopie se mu z historie kvůli kontextu mažou
+    parts.push({type:'text', text: snap===d.lastSent && !isLocal() ? '(Dokument se od poslední zprávy nezměnil.)' : snap});
     d.lastSent = snap;
   }
   if (lastSel) parts.push({type:'text', text:`<výběr>\n${lastSel}\n</výběr>`});
@@ -1214,7 +1341,7 @@ async function send(text, action){
   const userMsg = {role:'user', content: parts};
   const ctrl = new AbortController(); busy = ctrl;
   try{
-    const res = await converse(p, d.chat.api.concat([userMsg]), {web: $('#useWeb').checked}, ctrl.signal, on);
+    const res = await converse(p, d.chat.api.concat([userMsg]), {web: $('#useWeb').checked && !isLocal()}, ctrl.signal, on);
     if (res.stop==='refusal'){
       reply.err = 'Model tuhle odpověď odmítl dokončit. Zkus otázku formulovat jinak.';
     } else {
@@ -1224,9 +1351,7 @@ async function send(text, action){
     }
   }catch(e){
     if (e.name==='AbortError'){ reply.note = 'Zastaveno.'; }
-    else reply.err = e.status===401 ? 'API klíč nefunguje. Zkontroluj ho v Nastavení.' :
-      e.status===429 ? 'Moc dotazů najednou. Chvíli počkej.' :
-      e.message==='Failed to fetch' ? 'Nepodařilo se spojit s api.anthropic.com. Jsi online?' : ('Chyba: '+e.message);
+    else reply.err = aiError(e);
     d.lastSent = '';        // dotaz se nedokončil, příště pošleme dokument znovu
   }finally{
     reply.statusText=''; delete reply.statusText;
@@ -1295,15 +1420,17 @@ function aiSec(name){
   const k = Object.keys(s).find(k => norm(k)===norm(name)); return k ? s[k] : '';
 }
 
-function briefPrompt(d){
+// opt.sections = jen část sekcí, opt.card = false bez karty (lokální model to dostává po kouscích)
+function briefPrompt(d, opt={}){
   const p = P(d.preset), m = d.meta||{};
-  const secs = templateSections(p), hints = p.briefHints||{};
-  const fields = (p.fields||[]).filter(f => !f.own && f.t!=='rating' && f.t!=='toggle');
+  const secs = opt.sections || templateSections(p), hints = p.briefHints||{};
+  const fields = opt.card===false ? [] : (p.fields||[]).filter(f => !f.own && f.t!=='rating' && f.t!=='toggle');
   const known = fields.filter(f => m[f.k]).map(f => `${f.l}: ${m[f.k]}`).join(', ');
   const ex = { nokturno:1, nazev:'…', poznamka:'', karta:Object.fromEntries(fields.map(f => [f.k,'…'])), sekce:Object.fromEntries(secs.map(s => [s,'…'])) };
   // u nápadů agent potřebuje i rozepsaný text, u filmu stačí název
   const body = p.briefIncludeBody ? (d.body||'').trim() : '';
-  const written = body && body !== (p.template||'').trim() ? `\n\nCo zatím mám napsané:\n"""\n${body}\n"""` : '';
+  // ve značkách <dokument><text>, ať ho lokální model s malým kontextem umí zkrátit
+  const written = body && body !== (p.template||'').trim() ? `\n\nCo zatím mám napsané:\n<dokument>\n<text>\n${body}\n</text>\n</dokument>` : '';
   return `${p.briefIntro || 'Připrav podklady pro psací aplikaci Nokturno.'}
 
 ${p.name}: ${d.title || '(název chybí)'}${known ? `\nUž vím: ${known}` : ''}${written}
@@ -1316,8 +1443,7 @@ ${secs.map(s => `- ${s}${hints[s] ? `: ${hints[s]}` : ''}`).join('\n')}
 Pravidla:
 - Každá sekce má 2 až 5 vět, nejvýš asi 90 slov. Uvnitř textu smíš použít markdown: \\n pro nový řádek, **tučně**, odrážky „- “ a citace „> “.
 ${(p.briefRules || ['Nic si nevymýšlej. Co nevíš jistě, na kartě vynech a v textu to přiznej.']).map(r => '- '+r).join('\n')}
-- Karta: hodnoty piš česky a krátce. Klíče znamenají: ${fields.map(f => `${f.k} = ${f.l}`).join(', ')}.
-- ${p.briefNameRule || 'Do „nazev“ napiš název tak, jak ho Vilém má.'} Do „poznamka“ napiš, jen když si něčím nejsi jistý nebo máš důležitou poznámku, jinak tam nech prázdný řetězec.
+${fields.length ? `- Karta: hodnoty piš česky a krátce. Klíče znamenají: ${fields.map(f => `${f.k} = ${f.l}`).join(', ')}.\n` : ''}- ${p.briefNameRule || 'Do „nazev“ napiš název tak, jak ho Vilém má.'} Do „poznamka“ napiš, jen když si něčím nejsi jistý nebo máš důležitou poznámku, jinak tam nech prázdný řetězec.
 
 Odpověz jediným blokem kódu \`\`\`json a ničím jiným. JSON musí být platný (dvojité uvozovky, žádné komentáře) a mít přesně tuhle strukturu:
 \`\`\`json
@@ -1360,27 +1486,43 @@ function importBrief(text){
   return true;
 }
 async function generateBrief(){
-  if (briefBusy || !settings.apiKey) return;
+  if (briefBusy || !aiReady()) return;
   if (!doc.title.trim()){ toast('Nejdřív napiš název.'); $('#title').focus(); return; }
   const d = doc, p = P(d.preset), ctrl = new AbortController();
   briefBusy = {ctrl, doc:d.id}; briefStatus = 'připravuje podklady…'; renderBrief();
-  const on = { text:() => { if (briefStatus!=='píše…'){ briefStatus='píše…'; if (doc===d) renderBrief(); } },
-    status:s => { briefStatus = s; if (doc===d) renderBrief(); }, sources:()=>{}, note:()=>{} };
+  let step = '';
+  const on = { text:() => { if (briefStatus!=='píše…'+step){ briefStatus='píše…'+step; if (doc===d) renderBrief(); } },
+    status:s => { briefStatus = s+step; if (doc===d) renderBrief(); }, sources:()=>{}, note:()=>{} };
+  const ask = async opt => {
+    const res = await converse(p, [{role:'user', content:[{type:'text', text:briefPrompt(d, opt)}]}], {web:!!p.web && !isLocal()}, ctrl.signal, on);
+    if (res.stop==='refusal') throw new Error('Model podklady odmítl připravit.');
+    return parseBrief(res.content.filter(b => b.type==='text').map(b => b.text).join(''));
+  };
   try{
-    const res = await converse(p, [{role:'user', content:[{type:'text', text:briefPrompt(d)}]}], {web:!!p.web}, ctrl.signal, on);
-    const o = parseBrief(res.content.filter(b => b.type==='text').map(b => b.text).join(''));
-    if (res.stop==='refusal') toast('Model podklady odmítl připravit.');
-    else if (!o) toast('Odpověď nešla načíst. Zkus to znovu, nebo přes prompt.');
+    let o;
+    if (isLocal()){
+      // malý kontext: po třech sekcích, karta jen v prvním kole
+      const secs = templateSections(p); o = {karta:{}, sekce:{}, nazev:'', poznamka:''};
+      for (let i = 0; i < secs.length; i += 3){
+        step = ` (${Math.min(i+3, secs.length)}/${secs.length})`;
+        const part = await ask({sections:secs.slice(i, i+3), card:i===0});
+        if (!part) continue;
+        Object.assign(o.karta, part.karta||{}); Object.assign(o.sekce, part.sekce||{});
+        if (i===0){ o.nazev = part.nazev || part.film || ''; o.poznamka = part.poznamka || ''; }
+      }
+      if (!Object.keys(o.sekce).length && !Object.keys(o.karta).length) o = null;
+    } else o = await ask({});
+    if (!o) toast('Odpověď nešla načíst. Zkus to znovu, nebo přes prompt.');
     else { const r = applyBrief(o, d); toast(`Podklady hotové: ${r.n} sekcí`); }
   }catch(e){
-    if (e.name!=='AbortError') toast(e.status===401 ? 'API klíč nefunguje.' : 'Podklady se nepovedly: '+e.message);
+    if (e.name!=='AbortError') toast(e.status || e.local ? aiError(e) : 'Podklady se nepovedly: '+e.message);
   }finally{ briefBusy = null; briefStatus = ''; if (doc===d) renderBrief(); }
 }
 function maybeAutoBrief(){
   const p = P(doc.preset);
   if (!p.brief || p.briefAuto===false || !doc.title.trim() || hasAi() || doc.briefAsked) return;
   doc.briefAsked = true; touch();
-  if (settings.apiKey) generateBrief();
+  if (aiReady()) generateBrief();
   else { const el = $('#brief'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
 }
 
@@ -1410,7 +1552,7 @@ function renderBrief(){
   }
   el.innerHTML = `<div class="brow">${head}<span class="bm">${hasAi() ? 'Nové podklady nahradí ty současné.' : 'Údaje na kartu a pohled na každou sekci.'}</span><span class="sp"></span>
     <button class="btn sm" id="bCopy">Zkopírovat prompt</button><button class="btn sm" id="bPaste">Vložit odpověď</button>
-    ${settings.apiKey ? '<button class="btn sm pri" id="bGen">Vygenerovat</button>' : ''}
+    ${aiReady() ? '<button class="btn sm pri" id="bGen">Vygenerovat</button>' : ''}
     ${hasAi() ? '<button class="lnk" id="bDrop">zahodit</button><button class="lnk" id="bBack">zpět</button>' : ''}</div>
     <div class="bhint" id="bHint">Prompt vlož do Clauda. Jeho odpověď, tedy blok s kódem, zkopíruj a vlož sem. Vložit ji můžeš i kamkoli v appce přes ⌘V.</div>
     <textarea class="bpaste hidden" id="bPasteBox" rows="3" placeholder="Sem vlož odpověď z Clauda…" spellcheck="false"></textarea>`;
@@ -1579,6 +1721,10 @@ function openSettings(){
   $('#effSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.e===settings.effort));
   $('#fsRange').value = settings.fs; $('#fsVal').textContent = settings.fs+' px';
   $('#setKey').value = settings.apiKey; $('#setModel').value = settings.model;
+  $('#provSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on', b.dataset.p===(settings.provider||'cloud')));
+  $('#cloudRows').classList.toggle('hidden', isLocal()); $('#localRows').classList.toggle('hidden', !isLocal());
+  $('#locUrl').value = settings.localUrl; $('#locKey').value = settings.localKey; $('#locModel').value = settings.localModel;
+  $('#locCtx').value = settings.localCtx; $('#locThink').checked = !!settings.localThink;
   paintGd(); GD.setState(GD.state);
   $('#setModal').classList.add('on');
 }
@@ -1588,6 +1734,24 @@ $('#fsRange').oninput = e => { settings.fs=+e.target.value; $('#fsVal').textCont
 $('#fsRange').onchange = saveSettings;
 $('#setKey').onchange = e => { settings.apiKey = e.target.value.trim(); settings.noFallback=false; settings.noWeb=false; saveSettings(); renderAiHead(); };
 $('#setModel').onchange = e => { settings.model = e.target.value; settings.noFallback=false; saveSettings(); };
+$('#provSeg').onclick = e => { const v = e.target.dataset.p; if (!v) return; settings.provider = v; saveSettings(); openSettings(); renderAiHead(); renderBrief(); };
+const locSave = () => {
+  settings.localUrl = $('#locUrl').value.trim() || LOCAL_DEF.url; settings.localKey = $('#locKey').value.trim();
+  settings.localModel = $('#locModel').value.trim() || LOCAL_DEF.model;
+  settings.localCtx = Math.max(1024, +$('#locCtx').value || LOCAL_DEF.ctx); settings.localThink = $('#locThink').checked;
+  saveSettings(); renderAiHead(); renderBrief();
+};
+['#locUrl','#locKey','#locModel','#locCtx','#locThink'].forEach(s => $(s).onchange = locSave);
+$('#locTest').onclick = async () => {
+  locSave(); const info = $('#locInfo'); info.textContent = 'Zkouším…';
+  try{
+    const r = await fetch(settings.localUrl.replace(/\/+$/,'') + '/models', {headers: settings.localKey ? {Authorization:'Bearer '+settings.localKey} : {}});
+    if (!r.ok){ info.textContent = r.status===401||r.status===403 ? `Server odpověděl ${r.status}: klíč nesedí.` : `Server odpověděl ${r.status}.`; return; }
+    const ids = ((await r.json()).data||[]).map(m => m.id);
+    info.textContent = ids.includes(settings.localModel) ? `Spojení funguje, model ${settings.localModel} je k dispozici.`
+      : `Spojení funguje, ale model „${settings.localModel}“ server nenabízí. Má: ${ids.join(', ') || 'nic'}.`;
+  }catch(e){ info.textContent = localFetchHint(); }
+};
 $('#setClose').onclick = () => $('#setModal').classList.remove('on');
 $('#setBtn').onclick = openSettings;
 $('#themeBtn').onclick = () => { settings.theme = THEMES[(THEMES.indexOf(settings.theme)+1)%THEMES.length]; saveSettings(); applyTheme();
