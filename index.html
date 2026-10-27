@@ -502,6 +502,12 @@ const BUILTIN = [{
   placeholder:'Název filmu', ask:'Zeptej se na cokoli k filmu…',
   brief:true,
   briefIntro:'Připrav podklady k filmu pro psací aplikaci Nokturno. Piš jako filmový znalec a dramaturg, který film dobře zná.',
+  briefAsk:'Ke každé sekci napiš svůj vlastní pohled. Vilém ho bude mít vedle svých poznámek a bude ho porovnávat se svým názorem. Vilém dělá 3D, rendering a compositing, takže piš na úrovni řemesla: konkrétní scény, záběry a volby tvůrců, žádné obecné fráze. Piš v první osobě a měj vlastní názor. Spoilery jsou v pořádku.',
+  briefRules:[
+    'Fakta, která máš k dispozici, si ověř na webu. Nic si nevymýšlej. Co nevíš jistě, na kartě vynech a v textu to přiznej.',
+    'Na kartě piš délku jako „118 min“ a u obsazení uveď nejvýš 5 jmen.'
+  ],
+  briefNameRule:'Do „nazev“ napiš název, rok a režii, ať je jasné, o které dílo jde. Pokud je název nejednoznačný, napiš to do „poznamka“.',
   briefHints:{
     'První dojem':'tón, nálada a co film udělá s divákem, jak působí na tebe',
     'Příběh a stavba':'struktura, tempo vyprávění, zlomy, jak film pracuje s časem',
@@ -582,6 +588,105 @@ Dobrá otázka míří na konkrétní moment filmu („Co se v tobě změnilo, k
     {l:'Příbuzné filmy', p:'Doporuč 5 filmů, které si s tímhle povídají. U každého jednou větou řekni, v čem přesně (motiv, forma, řemeslo). Vyhni se samozřejmostem.'},
     {l:'Učeš text', p:'Projdi můj text jako redaktor. Nepřepisuj ho celý. Vypiš nejvýš 6 konkrétních míst ve tvaru citace → návrh, kde je text mlhavý, opakuje se, nebo se dá říct přesněji. Zachovej můj hlas.'},
     {l:'Verdikt', p:'Z mých poznámek zformuluj návrh verdiktu: 3 až 4 věty mým hlasem do citace. Pak jednou větou napiš, co by verdikt měl obsahovat a v poznámkách zatím chybí.'},
+    {l:'Doplnit kartu', fill:true}
+  ]
+}, {
+  id:'hra', builtin:true, glyph:'◇', name:'Hra', accent:'#6fb3a8',
+  agentName:'Designér', agentDesc:'herní designér · smyčka, mechaniky, prototyp', web:false,
+  placeholder:'Pracovní název hry', ask:'Zeptej se na cokoli k nápadu…',
+  fields:[
+    {k:'genre',l:'Žánr',key:1},{k:'platform',l:'Platforma',key:1},{k:'view',l:'Pohled · kamera',key:1},
+    {k:'engine',l:'Engine',sec:1},{k:'players',l:'Hráči',sec:1},{k:'session',l:'Délka hraní',sec:1},
+    {k:'audience',l:'Pro koho',sec:1},{k:'scope',l:'Rozsah',sec:1},{k:'refs',l:'Inspirace',sec:1,wide:1},
+    {k:'seen',l:'Zapsáno',t:'date',own:1,key:1},{k:'status',l:'Stav',own:1,key:1},
+    {k:'hype',l:'Nadšení',t:'rating',own:1,key:1}
+  ],
+  template:`## Jádro nápadu
+
+
+## Hráčská fantazie
+
+
+## Hlavní smyčka
+
+
+## Mechaniky
+
+
+## Progrese a výzva
+
+
+## Svět a příběh
+
+
+## Vizuální styl
+
+
+## Zvuk a hudba
+
+
+## Ovládání a pocit
+
+
+## Inspirace a reference
+
+
+## Rizika a otázky
+
+
+## Prototyp
+
+
+## Další krok
+`,
+  system:`Jsi Designér, zkušený herní designér a sparing partner na nápady. Vilém si sem zapisuje nápady na digitální hry, často v noci, a s tebou je rozvíjí.
+
+Kdo je Vilém: dělá 3D, rendering a compositing v Blenderu a umí si s pomocí AI postavit vlastní nástroje. Art, světlo, kamera a atmosféra jsou jeho silná stránka. Programování a balanc hry zvládá, ale nejsou to jeho hlavní obory. Nápady proto měř tím, co jeden člověk s tímhle profilem reálně postaví.
+
+Jak pracuješ:
+- Nápad patří jemu. Rozvíjíš ho a nepřepisuješ na svůj. Když si myslíš, že něco nefunguje, řekni to otevřeně a navrhni, jak z toho ven.
+- Hledej, kde je zábava: co hráč dělá každých 30 vteřin (sloveso), proč to chce dělat znovu a co se tím mění. Hra bez jasné smyčky je jen kulisa.
+- Buď konkrétní: mechaniky popisuj tak, aby šly prototypovat. Žádné „zajímavé možnosti“ nebo „hloubka hratelnosti“ bez obsahu.
+- Hlídej rozsah. Raději menší hra s jednou skvělou mechanikou než seznam funkcí. Když nápad bobtná, řekni, co škrtnout.
+- Na existující hry odkazuj jen tehdy, když opravdu existují a víš, co v nich je. Nevymýšlej si jejich mechaniky, data vydání ani prodeje.
+- Piš úsporně, česky, s markdownem střídmě. Neopakuj, co už v nápadu stojí.
+- Když navrhuješ text přímo do nápadu, piš ho jeho hlasem, v první osobě a střídmě, a dej ho do citace (řádky začínající „> “), aby šel vložit.
+
+Nápad má tyto vrstvy: Jádro nápadu · Hráčská fantazie · Hlavní smyčka · Mechaniky · Progrese a výzva · Svět a příběh · Vizuální styl · Zvuk a hudba · Ovládání a pocit · Inspirace a reference · Rizika a otázky · Prototyp · Další krok. Nemusí být vyplněné všechny. Pomáhej hlavně tam, kde nápad ještě nemá tvar.
+
+Dobrá otázka míří na konkrétní moment hraní („Co hráč udělá ve chvíli, kdy…?“), ne na obecný dojem („Pro koho to je?“).`,
+  fillAsk:'Doplň kartu k mému nápadu podle toho, co jsem zatím napsal. Nejdřív jednou větou shrň, jak nápad chápeš. Kde z textu nic nevyplývá, navrhni hodnotu, která k nápadu sedí, a u enginu ber ohled na to, že dělám v Blenderu.',
+  brief:true, briefAuto:false, briefIncludeBody:true,
+  briefIntro:'Připrav podklady k nápadu na digitální hru pro psací aplikaci Nokturno. Piš jako zkušený herní designér.',
+  briefAsk:'Ke každé sekci napiš svůj vlastní pohled a návrhy. Vilém ho bude mít vedle svých poznámek a bude ho porovnávat se svými nápady. Vycházej z toho, co už napsal, a rozvíjej to, nevymýšlej jinou hru. Kde zatím nic nenapsal, navrhni, co by tam mohlo být, a řekni, že je to návrh. Vilém dělá 3D a Blender, má silný art a atmosféru a hru by stavěl sám, takže hlídej realistický rozsah.',
+  briefRules:[
+    'Hry, na které odkazuješ, musí opravdu existovat a nesmíš si vymýšlet, co v nich je.',
+    'Kartu doplň jen tam, kde to z nápadu vyplývá, nebo kde máš jasný návrh (žánr, pohled, rozsah). U enginu navrhni ten, který sedí na Vilémův profil, a v sekci Prototyp řekni proč.'
+  ],
+  briefNameRule:'Do „nazev“ napiš pracovní název tak, jak ho Vilém má. Lepší název můžeš navrhnout v „poznamka“.',
+  briefHints:{
+    'Jádro nápadu':'nápad v jedné až dvou větách, jak bys ho řekl u piva, a co je na něm nové',
+    'Hráčská fantazie':'kým hráč je a co prožívá, jaký pocit si odnese',
+    'Hlavní smyčka':'co hráč dělá každých 30 vteřin, každých 5 minut a za celé sezení, jako sled sloves',
+    'Mechaniky':'2 až 4 mechaniky, které nesou smyčku, popsané tak, aby šly prototypovat',
+    'Progrese a výzva':'co se během hry mění, jak roste obtížnost a proč hráč pokračuje',
+    'Svět a příběh':'kde a kdy se hra odehrává a kolik příběhu opravdu potřebuje',
+    'Vizuální styl':'styl, světlo, barva a kamera, co z toho Vilém v Blenderu zvládne levně a co bude drahé',
+    'Zvuk a hudba':'zvukový design a hudba jako součást hratelnosti, ne jen kulisa',
+    'Ovládání a pocit':'game feel: odezva, váha, kamera, co musí být na ovladači příjemné hned v první minutě',
+    'Inspirace a reference':'3 až 5 existujících her a co přesně si z nich vzít nebo čemu se vyhnout',
+    'Rizika a otázky':'proč by to mohlo nebavit, co je technicky nebo rozsahem nejtěžší, co už existuje',
+    'Prototyp':'nejmenší hratelná verze na víkend: co v ní je, co ne a jaký engine',
+    'Další krok':'jedna konkrétní věc, kterou udělat zítra'
+  },
+  actions:[
+    {l:'Vyzpovídej mě', p:'Přečti si můj nápad a polož mi 3 až 5 otázek, které mi pomůžou ho dotáhnout. Ptej se na konkrétní momenty hraní a na místa, kde nápad zatím nemá tvar. Napiš jen očíslované otázky.'},
+    {l:'Kde je zábava', p:'Najdi v mém nápadu zábavu: jaké je hlavní sloveso, jak vypadá smyčka na 30 vteřin, na 5 minut a na celé sezení, a proč by hráč chtěl pokračovat. Když smyčka chybí nebo je slabá, řekni to a navrhni dvě možnosti.'},
+    {l:'Tři varianty', p:'Navrhni tři varianty mého nápadu. Jednu s jinou hlavní mechanikou, jednu v jiném prostředí a jednu v jiném žánru nebo formátu. U každé napiš dvě věty a co na ní je lepší nebo horší než na původní.'},
+    {l:'Rozbij to', p:'Hraj ďáblova advokáta. Proč by moje hra mohla nudit, co je na ní nejtěžší postavit, co už existuje a kde se rozsah vymkne. Buď konkrétní a u každého rizika napiš, jak ho levně ověřit.'},
+    {l:'Podobné hry', p:'Doporuč 5 existujících her, které si s mým nápadem povídají. U každé jednou větou napiš, co si z ní vzít nebo čemu se vyhnout. Jen hry, o kterých víš jistě, že existují.'},
+    {l:'Prototyp na víkend', p:'Navrhni nejmenší hratelný prototyp mého nápadu, který postavím za víkend. Napiš, co v něm je a co ne, jaký engine a proč, a postup v 5 až 8 krocích. Počítej s tím, že art a scénu udělám v Blenderu.'},
+    {l:'Pitch', p:'Z mého nápadu napiš pitch: jednu chytlavou větu a pod ní odstavec o 3 až 4 větách mým hlasem, obojí do citace. Pak jednou větou napiš, co pitchi zatím chybí.'},
     {l:'Doplnit kartu', fill:true}
   ]
 }];
@@ -699,7 +804,8 @@ async function deleteDoc(id){
 }
 function subtitle(d){
   const m = d.meta||{};
-  if (d.preset==='film'){ const s=[m.year,m.director].filter(Boolean).join(' · '); if (s) return s; }
+  const s = (P(d.preset).fields||[]).filter(f => f.key && !f.own && !f.t).slice(0,2).map(f => m[f.k]).filter(Boolean).join(' · ');
+  if (s) return s;
   const line = (d.body||'').split('\n').find(l => l.trim() && !/^#|^-\s*00:00|^>\s*$/.test(l.trim()));
   return line ? line.slice(0,60) : '';
 }
@@ -1150,6 +1256,7 @@ function runAction(a){
     const keys = p.fields.filter(f=>!f.own && f.t!=='rating' && f.t!=='toggle').map(f=>`"${f.k}" (${f.l})`).join(', ');
     const known = p.fields.filter(f=>doc.meta[f.k] && !f.own).map(f=>`${f.l}: ${doc.meta[f.k]}`).join('; ');
     return send(null, {l:a.l, fill:true, prompt:
+      p.fillAsk ? `${p.fillAsk}${known?` Už vyplněné: ${known}.`:''} Připoj blok \`\`\`json s klíči ${keys}. Hodnoty piš česky jako krátký text. Co z nápadu nevyplývá a nemáš na to jasný návrh, vynech.` :
       `Doplň údaje na kartu k „${doc.title||'(název zatím chybí)'}“${known?` (už vím: ${known})`:''}. Když je potřeba, ověř je na webu. Nejdřív jednou větou napiš, o které dílo jde (rok, autor), ať poznám, že jde o to správné. Pokud název není jednoznačný, vyjmenuj možnosti a JSON vynech. Jinak připoj blok \`\`\`json s klíči ${keys}${doc.title?'':', "title"'}. Hodnoty piš česky jako krátký text (délku ve formátu „118 min“, u obsazení nejvýš 5 jmen). Co nevíš jistě, vynech.`});
   }
   send(null, {l:a.l, prompt:a.p});
@@ -1193,21 +1300,24 @@ function briefPrompt(d){
   const secs = templateSections(p), hints = p.briefHints||{};
   const fields = (p.fields||[]).filter(f => !f.own && f.t!=='rating' && f.t!=='toggle');
   const known = fields.filter(f => m[f.k]).map(f => `${f.l}: ${m[f.k]}`).join(', ');
-  const ex = { nokturno:1, film:'…', poznamka:'', karta:Object.fromEntries(fields.map(f => [f.k,'…'])), sekce:Object.fromEntries(secs.map(s => [s,'…'])) };
+  const ex = { nokturno:1, nazev:'…', poznamka:'', karta:Object.fromEntries(fields.map(f => [f.k,'…'])), sekce:Object.fromEntries(secs.map(s => [s,'…'])) };
+  // u nápadů agent potřebuje i rozepsaný text, u filmu stačí název
+  const body = p.briefIncludeBody ? (d.body||'').trim() : '';
+  const written = body && body !== (p.template||'').trim() ? `\n\nCo zatím mám napsané:\n"""\n${body}\n"""` : '';
   return `${p.briefIntro || 'Připrav podklady pro psací aplikaci Nokturno.'}
 
-${p.name}: ${d.title || '(název chybí)'}${known ? `\nUž vím: ${known}` : ''}
+${p.name}: ${d.title || '(název chybí)'}${known ? `\nUž vím: ${known}` : ''}${written}
 
-Ke každé sekci napiš svůj vlastní pohled. Vilém ho bude mít vedle svých poznámek a bude ho porovnávat se svým názorem. Vilém dělá 3D, rendering a compositing, takže piš na úrovni řemesla: konkrétní scény, záběry a volby tvůrců, žádné obecné fráze. Piš v první osobě a měj vlastní názor. Spoilery jsou v pořádku.
+${p.briefAsk || 'Ke každé sekci napiš svůj vlastní pohled. Vilém ho bude mít vedle svých poznámek a bude ho porovnávat se svým názorem. Piš v první osobě a měj vlastní názor.'}
 
 Co patří do sekcí:
 ${secs.map(s => `- ${s}${hints[s] ? `: ${hints[s]}` : ''}`).join('\n')}
 
 Pravidla:
 - Každá sekce má 2 až 5 vět, nejvýš asi 90 slov. Uvnitř textu smíš použít markdown: \\n pro nový řádek, **tučně**, odrážky „- “ a citace „> “.
-- Fakta, která máš k dispozici, si ověř na webu. Nic si nevymýšlej. Co nevíš jistě, na kartě vynech a v textu to přiznej.
-- Karta: hodnoty piš česky a krátce. Délku piš jako „118 min“, u obsazení uveď nejvýš 5 jmen. Klíče znamenají: ${fields.map(f => `${f.k} = ${f.l}`).join(', ')}.
-- Do „film“ napiš název, rok a režii, ať je jasné, o které dílo jde. Do „poznamka“ napiš, jen když je název nejednoznačný nebo si něčím nejsi jistý, jinak tam nech prázdný řetězec.
+${(p.briefRules || ['Nic si nevymýšlej. Co nevíš jistě, na kartě vynech a v textu to přiznej.']).map(r => '- '+r).join('\n')}
+- Karta: hodnoty piš česky a krátce. Klíče znamenají: ${fields.map(f => `${f.k} = ${f.l}`).join(', ')}.
+- ${p.briefNameRule || 'Do „nazev“ napiš název tak, jak ho Vilém má.'} Do „poznamka“ napiš, jen když si něčím nejsi jistý nebo máš důležitou poznámku, jinak tam nech prázdný řetězec.
 
 Odpověz jediným blokem kódu \`\`\`json a ničím jiným. JSON musí být platný (dvojité uvozovky, žádné komentáře) a mít přesně tuhle strukturu:
 \`\`\`json
@@ -1234,7 +1344,8 @@ function applyBrief(o, d){
   }
   const sections = {};
   for (const [k,v] of Object.entries(o.sekce||{})) if (typeof v==='string' && v.trim() && v.trim()!=='…') sections[k] = v.trim();
-  const film = o.film && o.film!=='…' ? String(o.film) : '';
+  const nm = o.nazev ?? o.film;   // starší odpovědi měly klíč „film“
+  const film = nm && nm!=='…' ? String(nm) : '';
   d.ai = { sections, film, note: o.poznamka ? String(o.poznamka) : '', at: Date.now() };
   if (!d.title && film) d.title = film.replace(/\s*\(.*$|\s+[–—]\s.*$/, '').trim();
   d.updated = Date.now(); d.rev = (d.rev||0) + 1; DB.put(d); GD.soon();
@@ -1266,7 +1377,8 @@ async function generateBrief(){
   }finally{ briefBusy = null; briefStatus = ''; if (doc===d) renderBrief(); }
 }
 function maybeAutoBrief(){
-  if (!P(doc.preset).brief || !doc.title.trim() || hasAi() || doc.briefAsked) return;
+  const p = P(doc.preset);
+  if (!p.brief || p.briefAuto===false || !doc.title.trim() || hasAi() || doc.briefAsked) return;
   doc.briefAsked = true; touch();
   if (settings.apiKey) generateBrief();
   else { const el = $('#brief'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
