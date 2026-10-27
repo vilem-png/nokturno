@@ -1772,17 +1772,28 @@ const GD = {
 
       // Změna místně = jiné doc.rev než při poslední synchronizaci, změna na Disku = jiné upd.
       // Časy se mezi zařízeními neporovnávají, hodiny telefonu a Macu se můžou rozcházet.
+      // Během síťových čekání se dál píše. Do d.drive proto jde stav, který opravdu odešel,
+      // a stažená verze nikdy nepřepíše dokument, do kterého se mezitím psalo.
       const upload = async (d, fid) => {
         const base = d.drive ? d.drive.upd : 0;
         if (d.updated <= base) d.updated = base + 1;
-        const id = await this.put(fid, fname(d), props(d), strip(d));
-        d.drive = {id, upd:d.updated, rev:d.rev||0}; await DB.put(d);
+        const sent = strip(clone(d)), rev = d.rev||0;
+        const id = await this.put(fid, fname(sent), props(sent), sent);
+        d.drive = {id, upd:sent.updated, rev}; await DB.put(d);
       };
       const download = async (d, f, ru) => {
+        const rev0 = d.rev||0;
         const r = await this.get(f.id);
+        if ((d.rev||0) !== rev0) return false;          // mezitím psal – vyřeší příští kolo
+        const open = doc===d, st = main.scrollTop, a = ta.selectionStart, b = ta.selectionEnd;
         for (const k of Object.keys(d)) delete d[k];
-        Object.assign(d, r, {updated:ru}); d.drive = {id:f.id, upd:ru, rev:d.rev||0}; await DB.put(d);
-        if (doc===d) reopen = true;
+        Object.assign(d, r, {updated:ru}); d.drive = {id:f.id, upd:ru, rev:d.rev||0};
+        if (open){                                      // hned, ať se do starého textu nedá psát dál
+          openDoc(d.id); main.scrollTop = st;
+          ta.setSelectionRange(Math.min(a, ta.value.length), Math.min(b, ta.value.length)); render();
+        }
+        await DB.put(d);
+        return true;
       };
       for (const d of docs.slice()){
         const f = byId[d.id]; delete byId[d.id];
@@ -1796,10 +1807,20 @@ const GD = {
         if (!d.drive){ ru > d.updated ? await download(d, f, ru) : await upload(d, f.id); continue; }   // první spárování
         const remoteChanged = ru !== d.drive.upd;
         if (localChanged && remoteChanged){
-          const copy = {...strip(clone(d)), id:uid(), title:(d.title||'Bez názvu')+' (kopie z tohoto zařízení)', updated:Date.now()};
-          docs.push(copy); await upload(copy, null);
-          toast(`„${d.title||'Bez názvu'}“ se změnil i jinde. Tvoje verze je uložená jako kopie.`);
-          await download(d, f, ru);
+          const name = d.title || 'Bez názvu';
+          if (doc===d){
+            // otevřený dokument se pod rukama nemění: tvůj text zůstane, verze z Disku se uloží vedle
+            const r = await this.get(f.id);
+            const other = {...strip(r), id:uid(), title:(r.title||name)+' (verze z jiného zařízení)', updated:Date.now(), rev:1};
+            docs.push(other); await upload(other, null);
+            d.drive.upd = ru; await upload(d, f.id);
+            toast(`„${name}“ se mezitím změnil i jinde. Tvůj text zůstal, druhá verze je v dokumentech vedle.`);
+          } else {
+            const copy = {...strip(clone(d)), id:uid(), title:name+' (kopie z tohoto zařízení)', updated:Date.now(), rev:1};
+            docs.push(copy); await upload(copy, null);
+            toast(`„${name}“ se změnil i jinde. Tvoje verze je uložená jako kopie.`);
+            await download(d, f, ru);
+          }
         }
         else if (localChanged) await upload(d, f.id);
         else if (remoteChanged) await download(d, f, ru);
