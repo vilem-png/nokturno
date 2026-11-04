@@ -702,6 +702,119 @@ Dobrá otázka míří na konkrétní moment hraní („Co hráč udělá ve chv
     {l:'Pitch', p:'Z mého nápadu napiš pitch: jednu chytlavou větu a pod ní odstavec o 3 až 4 větách mým hlasem, obojí do citace. Pak jednou větou napiš, co pitchi zatím chybí.'},
     {l:'Doplnit kartu', fill:true}
   ]
+}, {
+  id:'fotoscenar', builtin:true, glyph:'▣', name:'Fotoscénář', accent:'#c48f9c',
+  agentName:'Režisér', agentDesc:'fotoscénář · záběry, návaznost, přijímačky', web:false,
+  placeholder:'Pracovní název příběhu', ask:'Zeptej se na příběh nebo záběry…',
+  fields:[
+    {k:'theme',l:'Téma',key:1},{k:'school',l:'Škola · obor',key:1},{k:'shots',l:'Počet fotek',key:1},
+    {k:'format',l:'Formát',sec:1},{k:'files',l:'Názvy souborů',sec:1,wide:1},
+    {k:'cast',l:'Herci',sec:1},{k:'locations',l:'Lokace',sec:1},{k:'gear',l:'Foťák · objektivy',sec:1},
+    {k:'deadline',l:'Odevzdání',t:'date',own:1,key:1},{k:'status',l:'Stav',own:1,key:1},
+    {k:'confidence',l:'Jistota',t:'rating',own:1,key:1}
+  ],
+  // zadání z přijímaček, ať je na kartě hned po založení
+  metaDefaults:{ theme:'Byl(a) jsem nad tebou.', shots:'nejvýš 13', format:'10×15 cm (3:2), .jpg nebo .png do 10 MB',
+    files:'Jmeno_Prijmeni_Fotoscenar_1, Jmeno_Prijmeni_Fotoscenar_2 … (bez diakritiky)' },
+  template:`## Téma a výklad
+> Byl(a) jsem nad tebou.
+
+## Příběh v jedné větě
+
+
+## Postavy
+
+
+## Stavba
+
+
+## Záběry
+1.
+2.
+3.
+4.
+5.
+6.
+7.
+8.
+9.
+10.
+11.
+12.
+13.
+
+## Srozumitelnost bez textu
+
+
+## Obraz a světlo
+
+
+## Natáčecí plán
+
+
+## Rizika
+
+
+## Před odevzdáním
+- nejvýš 13 fotografií, každá je jeden záběr
+- .jpg nebo .png, každá do 10 MB
+- názvy bez diakritiky: Jmeno_Prijmeni_Fotoscenar_1, _2 …
+- všechny fotografie jsem fotil sám
+- příběh je srozumitelný bez jediného slova textu
+`,
+  system:`Jsi Režisér, zkušený filmový režisér a pedagog, který sedává v přijímacích komisích filmových škol. Vilém tu píše a rozzáběrovává fotoscénář na přijímací zkoušky a s tebou ho konzultuje.
+
+Zadání:
+- Fotoscénář na téma „Byl(a) jsem nad tebou.“
+- Nejvýš 13 fotografií ve formátu 10×15 cm. Každá fotografie je jeden záběr hypotetického filmu.
+- Komise hodnotí, jestli uchazeč umí v obrazové zkratce vyprávět jednoduchý příběh a rozzáběrovat návazný děj.
+- Fotoscénář musí být srozumitelný bez jakéhokoli vysvětlujícího textu.
+- Uchazeč musí být autorem všech fotografií. Soubory jsou .png nebo .jpg do 10 MB a jmenují se bez diakritiky, třeba Jan_Novak_Fotoscenar_1.
+
+Kdo je Vilém: dělá 3D, rendering a compositing v Blenderu, rozumí kameře, objektivům, světlu a střihu. Mluv s ním na úrovni řemesla. Pozor: fotografie musí být skutečně jeho. Rendery, AI obrázky ani cizí fotky použít nesmí. Kdyby navrhoval cokoli, co by se tomu blížilo (výrazné koláže, vložené 3D prvky), řekni mu, ať si to ověří u školy.
+
+Jak pracuješ:
+- Příběh patří jemu. Rozvíjíš ho, nepřepisuješ ho na svůj. Když něco nefunguje, řekni to otevřeně a navrhni, jak z toho ven.
+- Hlídej, aby šel příběh přečíst jen z obrazu: kdo je kdo, kde jsme, co se stalo, co se změnilo. Co divák z fotky nepozná, v příběhu není.
+- U každého záběru mysli na velikost (celek, polocelek, polodetail, detail), úhel a výšku kamery, směr pohledu a pohybu, osu a světlo. Hlídej návaznost mezi záběry: stejné rekvizity, kostým, denní dobu a směr.
+- Téma vykládej nápaditě, ale tak, aby ho komise v příbězích poznala. Vyhýbej se prvnímu, nejčastějšímu nápadu a upozorni, když je výklad moc doslovný nebo moc vzdálený.
+- 13 je strop, ne cíl. Raději méně silných záběrů než vata. Každý záběr musí posouvat děj.
+- Mysli prakticky: co Vilém nafotí sám s lidmi kolem sebe, na dostupných místech a při dostupném světle.
+- Piš úsporně, česky, s markdownem střídmě. Neopakuj, co už v textu stojí.
+- Když navrhuješ text přímo do scénáře, piš ho jeho hlasem a dej ho do citace (řádky začínající „> “), aby šel vložit.
+
+Scénář má tyto části: Téma a výklad · Příběh v jedné větě · Postavy · Stavba · Záběry (očíslované 1 až 13) · Srozumitelnost bez textu · Obraz a světlo · Natáčecí plán · Rizika · Před odevzdáním.`,
+  fillAsk:'Doplň kartu podle mého příběhu a záběrů. Nejdřív jednou větou shrň, jak příběh chápeš. U herců, lokací a foťáku navrhni jen to, co z textu vyplývá nebo co je pro takový příběh nejjednodušší sehnat.',
+  brief:true, briefAuto:false, briefIncludeBody:true,
+  briefIntro:'Připrav podklady k fotoscénáři na přijímací zkoušky na filmovou školu pro psací aplikaci Nokturno. Piš jako zkušený režisér, který sedává v přijímací komisi.',
+  briefAsk:'Zadání: nejvýš 13 fotografií 10×15 cm, každá je jeden záběr hypotetického filmu, na téma „Byl(a) jsem nad tebou.“ Příběh musí být srozumitelný bez textu a všechny fotky musí uchazeč nafotit sám. Ke každé sekci napiš svůj vlastní pohled a návrhy. Vilém ho bude mít vedle svých poznámek. Vycházej z toho, co už napsal, a rozvíjej to, nevymýšlej jiný příběh. Kde zatím nic nenapsal, navrhni, co by tam mohlo být, a řekni, že je to návrh.',
+  briefRules:[
+    'U záběrů piš ke každému číslo, velikost záběru a co je v obraze. Nepřekroč 13 záběrů.',
+    'Kartu doplň jen tam, kde to z příběhu vyplývá. Téma, počet fotek, formát a názvy souborů nech být.'
+  ],
+  briefNameRule:'Do „nazev“ napiš pracovní název tak, jak ho Vilém má. Lepší název můžeš navrhnout v „poznamka“.',
+  briefHints:{
+    'Téma a výklad':'jak lze „Byl(a) jsem nad tebou.“ číst (výška, převaha, péče, smrt, vzpomínka…) a který výklad tenhle příběh nese',
+    'Příběh v jedné větě':'kdo, co chce, co se stane a jak to dopadne, v jedné větě',
+    'Postavy':'kolik postav a jak je divák bez textu pozná a rozliší (kostým, rekvizita, prostředí)',
+    'Stavba':'začátek, zlom a konec rozložené do 13 záběrů, kde je pointa',
+    'Záběry':'očíslovaný sled záběrů s velikostí a obsahem, nejvýš 13',
+    'Srozumitelnost bez textu':'co musí divák z obrazu pochopit a kde hrozí, že se ztratí',
+    'Obraz a světlo':'orientace a poměr 3:2, objektivy, výška kamery (téma nabízí horní a dolní pohled), světlo a barva',
+    'Natáčecí plán':'lokace, lidé, rekvizity, denní doba a pořadí focení',
+    'Rizika':'co se nemusí povést, co je příliš doslovné, co komise viděla stokrát',
+    'Před odevzdáním':'kontrola zadání: počet, formát, velikost, názvy souborů, autorství, srozumitelnost'
+  },
+  actions:[
+    {l:'Výklady tématu', p:'Navrhni 6 výrazně odlišných výkladů tématu „Byl(a) jsem nad tebou.“. U každého jednou větou příběh a čím by mohl komisi zaujmout. Na konci označ, který je nejobvyklejší, abych se mu mohl vyhnout.'},
+    {l:'Rozzáběruj to', p:'Z mého příběhu navrhni sled nejvýš 13 záběrů. U každého číslo, velikost, úhel kamery a co je v obraze, v jedné řádce. Hlídej návaznost a to, aby byl děj srozumitelný bez textu.'},
+    {l:'Test bez textu', p:'Představ si, že vidíš jen moje fotky v pořadí, bez jediného slova. Převyprávěj příběh, jak bys ho pochopil, a pak vypiš místa, kde se divák ztratí nebo pochopí něco jiného, než chci.'},
+    {l:'Návaznost', p:'Projdi moje záběry a hledej chyby v návaznosti: skok přes osu, směr pohledu a pohybu, světlo a denní dobu, rekvizity, kostým. U každé chyby napiš, jak ji opravit.'},
+    {l:'Škrtej', p:'Které záběry jsou navíc, opakují se, nebo jdou spojit? Navrhni nejkratší sled, který příběh pořád unese, a napiš, co tím získám.'},
+    {l:'Natáčecí plán', p:'Z mých záběrů sestav praktický plán focení: lokace, lidé, rekvizity, kostýmy, denní doba a pořadí, ve kterém fotit, aby to šlo stihnout co nejrychleji.'},
+    {l:'Pohled komise', p:'Posuď můj fotoscénář jako přijímací komise filmové školy: co je silné, co slabé, jak působí výklad tématu a jestli je srozumitelný bez textu. Na konci napiš tři nejdůležitější úpravy.'},
+    {l:'Doplnit kartu', fill:true}
+  ]
 }];
 
 /* ═══════════════ úložiště ═══════════════ */
@@ -774,6 +887,7 @@ async function newDoc(){
   const p = P(settings.preset);
   const meta = {};
   if (p.fields.some(f=>f.k==='seen')) meta.seen = new Date().toISOString().slice(0,10);
+  Object.assign(meta, p.metaDefaults || {});
   const d = { id:uid(), preset:p.id, title:'', meta, body:p.template||'', created:Date.now(), updated:Date.now(),
     chat:{api:[], view:[]}, lastSent:'', ai:null, view:{open:{}, aiOnly:false} };
   docs.push(d); await DB.put(d);
