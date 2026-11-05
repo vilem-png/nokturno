@@ -815,6 +815,83 @@ Scénář má tyto části: Téma a výklad · Příběh v jedné větě · Post
     {l:'Pohled komise', p:'Posuď můj fotoscénář jako přijímací komise filmové školy: co je silné, co slabé, jak působí výklad tématu a jestli je srozumitelný bez textu. Na konci napiš tři nejdůležitější úpravy.'},
     {l:'Doplnit kartu', fill:true}
   ]
+}, {
+  id:'povidka', builtin:true, glyph:'¶', name:'Povídka', accent:'#8fa3d6',
+  agentName:'Redaktor', agentDesc:'literární redaktor · stavba, hlas, škrty', web:false,
+  placeholder:'Pracovní název povídky', ask:'Zeptej se na cokoli k povídce…',
+  fields:[
+    {k:'genre',l:'Žánr',key:1},{k:'pov',l:'Vypravěč · osoba',key:1},{k:'length',l:'Rozsah',key:1},
+    {k:'tense',l:'Čas vyprávění',sec:1},{k:'setting',l:'Kde a kdy',sec:1},{k:'mood',l:'Tón',sec:1},
+    {k:'target',l:'Pro koho · kam',sec:1},{k:'refs',l:'Inspirace',sec:1,wide:1},
+    {k:'seen',l:'Založeno',t:'date',own:1,key:1},{k:'status',l:'Stav',own:1,key:1},
+    {k:'joy',l:'Spokojenost',t:'rating',own:1,key:1}
+  ],
+  template:`## Jádro
+> O čem to je, v jedné větě:
+
+
+## Postavy
+
+
+## Místo a čas
+
+
+## Stavba
+
+
+## Hlas a vyprávění
+
+
+## Text
+
+
+## Poznámky k přepisu
+`,
+  system:`Jsi Redaktor, zkušený literární redaktor a první čtenář. Vilém tu píše povídky, často v noci, a s tebou je konzultuje od nápadu po poslední přepis.
+
+Kdo je Vilém: dělá 3D, rendering a compositing v Blenderu a myslí obrazem, kamerou a střihem. To je jeho síla i past: scény umí vidět, ale nesmí je jen popisovat. Mluv s ním jako s autorem, ne jako se žákem.
+
+Jak pracuješ:
+- Povídka patří jemu. Nepíšeš ji za něj a nepřepisuješ celé pasáže. Ukazuješ, co funguje a co ne, a když něco navrhuješ, je to krátká ukázka, ne náhrada.
+- Hlídej to, co dělá povídku povídkou: jeden hlavní konflikt, malý počet postav, změnu mezi začátkem a koncem a konec, který něco otočí nebo dovře. Co tomu neslouží, navrhni škrtnout.
+- Čti pozorně: konkrétní věty, slova a místa v textu. Cituj krátce, co komentuješ. Žádné obecné rady typu „ukaž, nevyprávěj“ bez konkrétního místa, kde to platí.
+- Hlídej hlas a perspektivu: kdo vypráví, co může vědět, jestli se drží časová rovina a jestli dialogy zní jako lidi, ne jako vysvětlivky.
+- Čeština je důležitá: upozorni na kostrbatou větu, opakované slovo, nepřirozený slovosled nebo anglicismus. Pravopis oprav jen tehdy, když o něj jde.
+- Na existující knihy a autory odkazuj jen tehdy, když opravdu existují a víš, co v nich je. Nevymýšlej si citace.
+- Piš úsporně, česky, s markdownem střídmě. Neopakuj, co už v textu stojí.
+- Když navrhuješ text přímo do povídky, piš ho jeho hlasem a stylem textu a dej ho do citace (řádky začínající „> “), aby šel vložit.
+
+Dokument má tyto části: Jádro · Postavy · Místo a čas · Stavba · Hlas a vyprávění · Text (samotná povídka) · Poznámky k přepisu. Přípravné části nemusí být vyplněné. Když je povídka už rozepsaná, pracuj hlavně s Textem.
+
+Dobrá otázka míří na konkrétní místo příběhu („Co postava chce ve chvíli, kdy…?“), ne na obecný dojem („O čem chceš psát?“).`,
+  fillAsk:'Doplň kartu podle toho, co jsem zatím napsal. Nejdřív jednou větou shrň, o čem povídka podle tebe je. Rozsah odhadni v normostranách podle textu a plánu, vypravěče a čas vyprávění vyčti z textu.',
+  brief:true, briefAuto:false, briefIncludeBody:true,
+  briefIntro:'Připrav podklady k povídce pro psací aplikaci Nokturno. Piš jako zkušený literární redaktor a první čtenář.',
+  briefAsk:'Ke každé sekci napiš svůj vlastní pohled a návrhy. Vilém ho bude mít vedle svých poznámek. Vycházej z toho, co už napsal, a rozvíjej to, nevymýšlej jiný příběh. Kde zatím nic nenapsal, navrhni, co by tam mohlo být, a řekni, že je to návrh. Povídku za něj nepiš.',
+  briefRules:[
+    'V sekci Text nepiš pokračování ani přepis povídky. Napiš 3 až 5 konkrétních postřehů k tomu, co je napsané, s krátkou citací místa. Když tam zatím nic není, navrhni dvě možné první věty v duchu jeho plánu.',
+    'Kartu doplň jen tam, kde to z textu vyplývá, nebo kde máš jasný návrh.'
+  ],
+  briefNameRule:'Do „nazev“ napiš pracovní název tak, jak ho Vilém má. Lepší název můžeš navrhnout v „poznamka“.',
+  briefHints:{
+    'Jádro':'o čem povídka je v jedné větě: kdo, co chce, co mu stojí v cestě a co se změní. A o čem je doopravdy pod povrchem',
+    'Postavy':'kolik postav povídka unese, co hlavní postava chce a co potřebuje, čím je každá postava jiná',
+    'Místo a čas':'kde a kdy se děj odehrává, kolik času příběh pokryje a jaké konkrétní detaily prostředí ponesou atmosféru',
+    'Stavba':'kde začít (co nejpozději), zlom, vrchol a konec. Jestli konec něco otočí, nebo dovře',
+    'Hlas a vyprávění':'kdo vypráví, v jaké osobě a čase, jaký má odstup a tón, jak zní dialogy',
+    'Text':'konkrétní postřehy k napsanému textu s krátkými citacemi, nikoli přepis',
+    'Poznámky k přepisu':'co v příštím přepisu udělat nejdřív: 3 až 5 bodů od největšího problému'
+  },
+  actions:[
+    {l:'Vyzpovídej mě', p:'Přečti si moji povídku a poznámky a polož mi 3 až 5 otázek, které mi pomůžou ji dotáhnout. Ptej se na konkrétní místa příběhu, na to, co postavy chtějí, a na místa, kde příběh zatím nemá tvar. Napiš jen očíslované otázky.'},
+    {l:'První čtenář', p:'Přečti můj text jako čtenář, ne jako redaktor. Napiš, co sis z něj odnesl, kde tě to vtáhlo, kde ses nudil nebo ztratil a co čekáš, že bude dál. Upřímně a konkrétně, s krátkými citacemi.'},
+    {l:'Stavba', p:'Rozeber stavbu povídky: kde začíná, kde je zlom, vrchol a konec, a co se mezi začátkem a koncem změní. Když něco chybí nebo je na špatném místě, navrhni dvě možné úpravy.'},
+    {l:'Tři konce', p:'Navrhni tři výrazně odlišné konce mé povídky, které vycházejí z toho, co už je napsané. U každého dvě věty a co udělá s celým příběhem. Na konci označ ten, který je nejvíc čekaný.'},
+    {l:'Škrtej', p:'Projdi text a najdi, co je navíc: scény, odstavce a věty, které příběh neposouvají, vysvětlují, co už je jasné, nebo se opakují. Vypiš je s krátkou citací a jednou větou proč. Napiš, o kolik by se text zkrátil.'},
+    {l:'Dialogy', p:'Projdi dialogy v mém textu. Kde znějí strojeně, vysvětlují děj, nebo všechny postavy mluví stejně? Vypiš nejvýš 6 míst ve tvaru citace → návrh, mým stylem.'},
+    {l:'Učeš text', p:'Projdi můj text jako redaktor. Nepřepisuj ho celý. Vypiš nejvýš 8 konkrétních míst ve tvaru citace → návrh, kde je věta kostrbatá, slovo se opakuje, obraz je mlhavý nebo čeština zní nepřirozeně. Zachovej můj hlas.'},
+    {l:'Doplnit kartu', fill:true}
+  ]
 }];
 
 /* ═══════════════ úložiště ═══════════════ */
