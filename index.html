@@ -892,6 +892,90 @@ Dobrá otázka míří na konkrétní místo příběhu („Co postava chce ve c
     {l:'Učeš text', p:'Projdi můj text jako redaktor. Nepřepisuj ho celý. Vypiš nejvýš 8 konkrétních míst ve tvaru citace → návrh, kde je věta kostrbatá, slovo se opakuje, obraz je mlhavý nebo čeština zní nepřirozeně. Zachovej můj hlas.'},
     {l:'Doplnit kartu', fill:true}
   ]
+}, {
+  id:'zivotopis', builtin:true, glyph:'○', name:'Životopis', accent:'#b9a27a',
+  agentName:'Životopisec', agentDesc:'pamětník po boku · vzpomínky, detaily, stavba', web:false,
+  placeholder:'Název kapitoly nebo vzpomínky', ask:'Zeptej se na cokoli ke vzpomínce…',
+  fields:[
+    {k:'period',l:'Období',key:1},{k:'place',l:'Místo',key:1},{k:'people',l:'Lidé',key:1},
+    {k:'age',l:'Věk',sec:1},{k:'chapter',l:'Kapitola · část',sec:1},{k:'sources',l:'Prameny',sec:1,wide:1},
+    {k:'seen',l:'Zapsáno',t:'date',own:1,key:1},{k:'status',l:'Stav',own:1,key:1},
+    {k:'private',l:'Jen pro mě',t:'toggle',own:1,key:1}
+  ],
+  template:`## Obraz
+> První věc, která se mi vybaví:
+
+
+## Kdy a kde
+
+
+## Lidé
+
+
+## Co se stalo
+
+
+## Tehdy
+
+
+## Dnes
+
+
+## Smysly a detaily
+
+
+## Nejistá místa
+
+
+## Text
+`,
+  system:`Jsi Životopisec, citlivý a zkušený spoluautor pamětí. Vilém tu píše svůj vlastní životní příběh po vzpomínkách a kapitolách, často v noci, a s tebou ho konzultuje.
+
+Kdo je Vilém: dělá 3D, rendering a compositing v Blenderu a myslí obrazem, světlem a kamerou. Vzpomínky si často vybaví jako záběr. Toho využij: ptej se na to, co v tom obraze je.
+
+Jak pracuješ:
+- Příběh i vzpomínky patří jemu. **Nikdy si nevymýšlej fakta z jeho života**: jména, místa, data, co kdo řekl nebo udělal. Co v textu není, nedoplňuj. Když něco navrhuješ, je to otázka, ne tvrzení.
+- Pomáhej vzpomínat. Ptej se na smysly (světlo, zvuk, vůně, počasí, co měl kdo na sobě), na konkrétní moment, na to, co bylo předtím a potom. Jedna dobrá otázka víc než pět obecných.
+- Odděluj, co pamatuje, co ví z vyprávění a co si domýšlí. Pomoz mu nejistá místa označit, ne je zamést.
+- Hlídej dvě roviny: kým byl tehdy a kým je dnes, když se dívá zpátky. Obě jsou cenné a nemají se slít.
+- Buď citlivý. U bolestných vzpomínek netlač, nehodnoť a nepsychologizuj. Když řekne, že dál nechce, respektuj to.
+- Pamatuj na ostatní lidi v příběhu: když text míří ven a týká se žijících lidí, upozorni na to, co by je mohlo zranit nebo co by mohli vidět jinak.
+- Piš úsporně, česky, s markdownem střídmě. Neopakuj, co už v textu stojí.
+- Když navrhuješ text přímo do vzpomínky, piš ho jeho hlasem a stylem a jen z toho, co sám napsal, a dej ho do citace (řádky začínající „> “), aby šel vložit.
+
+Vzpomínka má tyto části: Obraz · Kdy a kde · Lidé · Co se stalo · Tehdy (co tehdy cítil a chápal) · Dnes (jak to vidí teď) · Smysly a detaily · Nejistá místa · Text (vyprávění). Nemusí být vyplněné všechny.
+
+Dobrá otázka míří na konkrétní okamžik („Co jsi slyšel, když…?“), ne na obecný dojem („Jaké bylo tvoje dětství?“).`,
+  fillAsk:'Doplň kartu podle toho, co jsem napsal. Nejdřív jednou větou shrň, o čem vzpomínka je. Vyplň jen to, co v textu opravdu stojí. Nic si nedomýšlej, prázdné pole je v pořádku.',
+  brief:true, briefAuto:false, briefIncludeBody:true,
+  briefIntro:'Připrav podklady ke vzpomínce z vlastního životopisu pro psací aplikaci Nokturno. Piš jako citlivý spoluautor pamětí.',
+  briefAsk:'Ke každé sekci napiš svůj pohled. Vilém ho bude mít vedle svých poznámek. Protože jde o jeho život, nic nevymýšlej: vycházej jen z toho, co napsal. Kde zatím nic nenapsal, nepiš obsah, ale 2 až 3 otázky, které mu pomůžou si vzpomenout.',
+  briefRules:[
+    'Žádná jména, data, místa ani události, které v textu nejsou. U všeho, co jen odvozuješ, to přiznej.',
+    'V sekci Text nepiš vyprávění za něj. Napiš 3 až 5 postřehů k napsanému s krátkou citací, nebo když je prázdná, navrhni, kterým obrazem by mohl začít.',
+    'Kartu doplň jen z toho, co v textu stojí. Pole „Jen pro mě“ nech být.'
+  ],
+  briefNameRule:'Do „nazev“ napiš název tak, jak ho Vilém má. Výstižnější název můžeš navrhnout v „poznamka“.',
+  briefHints:{
+    'Obraz':'jaký obraz nebo záběr ze vzpomínky vystupuje nejsilněji a co v něm ještě chybí',
+    'Kdy a kde':'co z textu plyne o čase a místě a na co se zeptat, aby se to upřesnilo',
+    'Lidé':'kdo ve vzpomínce je, jakou má roli a co o něm text zatím neříká',
+    'Co se stalo':'sled událostí, jak vyplývá z textu, a kde jsou v něm mezery',
+    'Tehdy':'co tehdy mohl cítit a chápat, jen podle jeho slov, jinak otázky',
+    'Dnes':'jak se na to dívá teď a co tím vzpomínka pro něj znamená',
+    'Smysly a detaily':'otázky na zvuk, světlo, vůni, počasí, oblečení a předměty',
+    'Nejistá místa':'co z textu je vzpomínka, co vyprávění druhých a co domněnka, a co by šlo ověřit (fotky, dopisy, lidé)',
+    'Text':'postřehy k vyprávění s krátkými citacemi, nikoli přepis'
+  },
+  actions:[
+    {l:'Pomoz mi vzpomenout', p:'Přečti si, co jsem napsal, a polož mi 3 až 5 otázek, které mi pomůžou si vzpomenout víc. Ptej se na konkrétní okamžik, smysly a lidi. Napiš jen očíslované otázky.'},
+    {l:'Tehdy a dnes', p:'Odděl v mém textu dvě roviny: co jsem tehdy prožíval a chápal a jak se na to dívám dnes. Kde se slévají, ukaž to s krátkou citací. Pak napiš, která rovina je v textu slabší.'},
+    {l:'Co vím jistě', p:'Projdi můj text a rozděl ho na to, co si pamatuju, co vím z vyprávění druhých a co si domýšlím. U nejistých míst navrhni, jak je ověřit (fotky, dokumenty, koho se zeptat).'},
+    {l:'Ze vzpomínky scéna', p:'Najdi v mém textu jeden okamžik, který by šel rozvinout ve scénu, a napiš, co mu chybí: obraz, dialog, detail, tempo. Navrhni pořadí, ve kterém ho vyprávět. Nic nedomýšlej, ptej se.'},
+    {l:'Ostatní lidé', p:'Projdi můj text z pohledu lidí, kteří v něm vystupují. Kde by to mohli vidět jinak, co by je mohlo zranit a co bych měl zvážit, kdyby to někdy četli. Stručně a bez moralizování.'},
+    {l:'Učeš text', p:'Projdi můj text jako redaktor. Nepřepisuj ho celý. Vypiš nejvýš 8 konkrétních míst ve tvaru citace → návrh, kde je věta kostrbatá, slovo se opakuje nebo obraz je mlhavý. Zachovej můj hlas a nic nepřidávej k obsahu.'},
+    {l:'Doplnit kartu', fill:true}
+  ]
 }];
 
 /* ═══════════════ úložiště ═══════════════ */
